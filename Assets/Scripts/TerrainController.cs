@@ -5,17 +5,23 @@ using System.Linq;
 
 public class TerrainController : MonoBehaviour
 {
-    public float height;
-    public float radius;
-    public Vector2 offset;
+    public float height1;
+    public float radius1;
+    public Vector2 offset1;
 
-    private float prevHeight;
-    private float prevRadius;
-    private Vector2 prevOffset;
+    public float height2;
+    public float radius2;
+    public Vector2 offset2;
 
-    private float vertDensity = 5f; // Verts per unit
-    private float landSize = 20f;
-    private float size;
+    private float prevHeight1;
+    private float prevRadius1;
+    private Vector2 prevOffset1;
+    private float prevHeight2;
+    private float prevRadius2;
+    private Vector2 prevOffset2;
+
+    private float density = 2f; // Squares per unit
+    private float size = 128f;
     private int resolution; // Number of verts on each side
 
     private Vector2[,] points;
@@ -33,13 +39,11 @@ public class TerrainController : MonoBehaviour
         groundMesh = groundMeshFilter.mesh;
         seaMesh = seaMeshFilter.mesh;
 
-        size = landSize + 1;
-
-        resolution = (int) (vertDensity * size);
+        resolution = (int) (density * size) + 1;
 
         points = new Vector2[resolution, resolution];
 
-        float vertSeparation = size / (resolution - 1);
+        float vertSeparation = 1f / density;
         Vector2 topRight = new Vector2(size / 2, size / 2);
 
         for (int i = 0; i < resolution; i++)
@@ -52,37 +56,51 @@ public class TerrainController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (prevHeight != height || prevRadius != radius || prevOffset != offset)
+        if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
+        || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
             GenerateHeightMap();
     }
 
     private void GenerateHeightMap()
     {
-        prevHeight = height;
-        prevRadius = radius;
-        prevOffset = offset;
+        prevHeight1 = height1;
+        prevRadius1 = radius1;
+        prevOffset1 = offset1;
+        prevHeight2 = height2;
+        prevRadius2 = radius2;
+        prevOffset2 = offset2;
 
         heightMap = new float[resolution, resolution];
 
         for (int i = 0; i < resolution; i++)
             for (int j = 0; j < resolution; j++)
             {
-                Vector2 disp = 
-                    new Vector2(i - resolution / 2f + 0.5f, j - resolution / 2f + 0.5f) - offset * vertDensity;
-
-                float dist = disp.magnitude;
-
                 heightMap[i, j] = -1;
 
-                float val = (dist / (radius * vertDensity)) * Mathf.PI;
+                Vector2 disp1 = 
+                    new Vector2(i - resolution / 2f + 0.5f, j - resolution / 2f + 0.5f) - offset1 * density;
 
-                if (val >= -Mathf.PI && val <= Mathf.PI)
-                    heightMap[i, j] += (Mathf.Sin(val + Mathf.PI / 2) + 1) * height;
+                float dist1 = disp1.magnitude;
+
+                float val1 = (dist1 / (radius1 * density)) * Mathf.PI;
+
+                if (val1 >= -Mathf.PI && val1 <= Mathf.PI)
+                    heightMap[i, j] += (Mathf.Sin(val1 + Mathf.PI / 2) + 1) * height1;
+
+                Vector2 disp2 = 
+                    new Vector2(i - resolution / 2f + 0.5f, j - resolution / 2f + 0.5f) - offset2 * density;
+
+                float dist2 = disp2.magnitude;
+
+                float val2 = (dist2 / (radius2 * density)) * Mathf.PI;
+
+                if (val2 >= -Mathf.PI && val2 <= Mathf.PI)
+                    heightMap[i, j] += (Mathf.Sin(val2 + Mathf.PI / 2) + 1) * height2;
 
                 if (
-                    i < vertDensity || j < vertDensity ||
-                    i > resolution - vertDensity - 1 ||
-                    j > resolution - vertDensity - 1
+                    i < density * size / 10 || j < density * size / 10 ||
+                    i > (resolution - 1) - density * size / 10 ||
+                    j > (resolution - 1) - density * size / 10
                     )
                     heightMap[i, j] = -1;
             }
@@ -98,28 +116,93 @@ public class TerrainController : MonoBehaviour
 
     private void UpdateGroundMesh()
     {
-        Vector3[] vertices = new Vector3[resolution * resolution];
-        int[] triangles = new int[(resolution - 1) * (resolution - 1) * 2 * 6];
+        Dictionary<Vector3, int> vertexMap = new Dictionary<Vector3, int>();
+        List<Vector3> vertexList = new List<Vector3>();
+        List<int> triangleList = new List<int>();
 
-        for (int i = 0; i < resolution; i++)
-            for (int j = 0; j < resolution; j++)
-                vertices[i * resolution + j] = new Vector3(points[i, j].x, heightMap[i, j], points[i, j].y);
+        int index = 0;
 
-        for (int i = 0; i < resolution - 1; i++)
-            for (int j = 0; j < resolution - 1; j++)
+        int AddVert(Vector3 vert)
+        {
+            try
             {
-                int index = ((i * resolution) + j) * 6;
-
-                triangles[index] = i * resolution + j;
-                triangles[index + 1] = i * resolution + (j + 1);
-                triangles[index + 2] = (i + 1) * resolution + j;
-                triangles[index + 3] = (i + 1) * resolution + (j + 1);
-                triangles[index + 4] = (i + 1) * resolution + j;
-                triangles[index + 5] = i * resolution + (j + 1);
+                return vertexMap[vert];
             }
+            catch (KeyNotFoundException)
+            {
+                vertexMap.Add(vert, index);
+                vertexList.Add(vert);
+                return index++;
+            }
+        }
 
-        groundMesh.vertices = vertices;
-        groundMesh.triangles = triangles;
+        void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
+        {
+            int v0 = AddVert(a);
+            int v1 = AddVert(b);
+            int v2 = AddVert(c);
+
+            triangleList.Add(v0);
+            triangleList.Add(v1);
+            triangleList.Add(v2);
+        }
+
+        void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+            AddTriangle(a, b, d);
+            AddTriangle(b, c, d);
+        }
+
+        bool[,] filled = new bool[resolution - 1, resolution - 1];
+
+        int s = 2;
+        while (s <= resolution >> 2) s <<= 1;
+
+        for (; s >= 1; s >>= 1)
+        {
+            for (int i = 0; i <= (resolution - 1) / 2 - s ; i += s)
+                for (int j = 0; j <= (resolution - 1) / 2 - s; j += s)
+                    for (int iCase = 0; iCase < 2; iCase++)
+                        for (int jCase = 0; jCase < 2; jCase++)
+                        {
+                            int x = (iCase == 0 ? i : (resolution - 1) - s - i);
+                            int y = (jCase == 0 ? j : (resolution - 1) - s - j);
+
+                            if (filled[x, y])
+                                continue;
+
+                            bool flat = true;
+                            if (s > 1)
+                            {
+                                float reference = heightMap[x, y];
+                                for (int u = 0; u <= s; u++)
+                                    for (int v = 0; v <= s; v++)
+                                        flat &= heightMap[x + u, y + v] == reference;
+                            }
+                            
+                            if (flat)
+                            {
+                                Vector3 v0 = new Vector3(
+                                    points[x, y].x, heightMap[x, y], points[x, y].y);
+                                Vector3 v1 = new Vector3(
+                                    points[x + s, y].x, heightMap[x + s, y], points[x + s, y].y);
+                                Vector3 v2 = new Vector3(
+                                    points[x, y + s].x, heightMap[x, y + s], points[x, y + s].y);
+                                Vector3 v3 = new Vector3(
+                                    points[x + s, y + s].x, heightMap[x + s, y + s], points[x + s, y + s].y);
+
+                                AddQuad(v0, v2, v3, v1);
+
+                                for (int u = 0; u < s; u++)
+                                    for (int v = 0; v < s; v++)
+                                        filled[x + u, y + v] = true;
+                            }
+                        }
+        }
+        groundMesh.Clear();
+        groundMesh.vertices = vertexList.ToArray();
+        Debug.Log(groundMesh.vertices.Length);
+        groundMesh.triangles = triangleList.ToArray();
         groundMesh.RecalculateNormals();
     }
 
@@ -173,38 +256,40 @@ public class TerrainController : MonoBehaviour
         bool[,] filled = new bool[resolution - 1, resolution - 1];
 
         int s = 2;
-
-        while (s < resolution) s <<= 1;
-
-        s >>= 1;
+        while (s <= resolution >> 2) s <<= 1;
 
         for (; s > 1; s >>= 1)
         {
-            for (int i = 0; i < resolution - s; i += s)
-                for (int j = 0; j < resolution - s; j += s)
-                {
-                    if (filled[i, j])
-                        continue;
+            for (int i = 0; i <= (resolution - 1) / 2 - s ; i += s)
+                for (int j = 0; j <= (resolution - 1) / 2 - s; j += s)
+                    for (int iCase = 0; iCase < 2; iCase++)
+                        for (int jCase = 0; jCase < 2; jCase++)
+                        {
+                            int x = (iCase == 0 ? i : (resolution - 1) - s - i);
+                            int y = (jCase == 0 ? j : (resolution - 1) - s - j);
 
-                    bool empty = true;
-                    for (int x = 0; x <= s; x++)
-                        for (int y = 0; y <= s; y++)
-                            empty &= heightMap[i + x, j + y] < 0;
-                    
-                    if (empty)
-                    {
-                        Vector3 v0 = new Vector3(points[i, j].x, 0f, points[i, j].y);
-                        Vector3 v1 = new Vector3(points[i + s, j].x, 0f, points[i + s, j].y);
-                        Vector3 v2 = new Vector3(points[i, j + s].x, 0f, points[i, j + s].y);
-                        Vector3 v3 = new Vector3(points[i + s, j + s].x, 0f, points[i + s, j + s].y);
+                            if (filled[x, y])
+                                continue;
 
-                        AddQuad(v0, v2, v3, v1);
+                            bool empty = true;
+                            for (int u = 0; u <= s; u++)
+                                for (int v = 0; v <= s; v++)
+                                    empty &= heightMap[x + u, y + v] < 0;
+                            
+                            if (empty)
+                            {
+                                Vector3 v0 = new Vector3(points[x, y].x, 0f, points[x, y].y);
+                                Vector3 v1 = new Vector3(points[x + s, y].x, 0f, points[x + s, y].y);
+                                Vector3 v2 = new Vector3(points[x, y + s].x, 0f, points[x, y + s].y);
+                                Vector3 v3 = new Vector3(points[x + s, y + s].x, 0f, points[x + s, y + s].y);
 
-                        for (int x = 0; x < s; x++)
-                            for (int y = 0; y < s; y++)
-                                filled[i + x, j + y] = true;
-                    }
-                }
+                                AddQuad(v0, v2, v3, v1);
+
+                                for (int u = 0; u < s; u++)
+                                    for (int v = 0; v < s; v++)
+                                        filled[x + u, y + v] = true;
+                            }
+                        }
         }
 
         float square = size / (resolution - 1);
@@ -311,22 +396,19 @@ public class TerrainController : MonoBehaviour
                 }
             }
 
-        Vector3[] vertices = vertexList.ToArray();
-        int[] triangles = triangleList.ToArray();
-
         seaMesh.Clear(); // VERY IMPORTANT IF CHANGING NUMBER OF VERTICES
-        seaMesh.vertices = vertices;
-        seaMesh.triangles = triangles;
+        seaMesh.vertices = vertexList.ToArray();
+        seaMesh.triangles = triangleList.ToArray();
         seaMesh.RecalculateNormals();
     }
 
     // void OnDrawGizmos()
     // {
-    //     Gizmos.color = Color.blue;
+    //     Gizmos.color = Color.red;
         
     //     for (int i = 0; i < seaMesh.vertices.Length; i++)
     //     {
-    //         Gizmos.DrawSphere(seaMesh.vertices[i], .1f);
+    //         Gizmos.DrawSphere(groundMesh.vertices[i], .1f);
     //     }
     // }
 }

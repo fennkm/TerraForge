@@ -373,13 +373,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.29120865, y: -0, z: -0, w: 0.9566596}
-  m_LocalPosition: {x: 0, y: 6.7, z: -15.13}
+  m_LocalRotation: {x: 0.4518858, y: -0, z: -0, w: 0.89207584}
+  m_LocalPosition: {x: 0, y: 27.6, z: -27.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 33.861, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 53.729, y: 0, z: 0}
 --- !u!1 &1738030347
 GameObject:
   m_ObjectHideFlags: 0
@@ -491,7 +491,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   height: 1.7
-  radius: 12
+  radius: 3
+  offset: {x: 0, y: 0}
   groundMeshFilter: {fileID: 597347439}
   seaMeshFilter: {fileID: 1738030348}
 --- !u!4 &1931061582
