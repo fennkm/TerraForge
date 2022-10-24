@@ -14,7 +14,8 @@ public class TerrainController : MonoBehaviour
     private Vector2 prevOffset;
 
     private float vertDensity = 5f; // Verts per unit
-    private float size = 20f;
+    private float landSize = 20f;
+    private float size;
     private int resolution; // Number of verts on each side
 
     private Vector2[,] points;
@@ -31,6 +32,8 @@ public class TerrainController : MonoBehaviour
     {
         groundMesh = groundMeshFilter.mesh;
         seaMesh = seaMeshFilter.mesh;
+
+        size = landSize + 1;
 
         resolution = (int) (vertDensity * size);
 
@@ -75,6 +78,13 @@ public class TerrainController : MonoBehaviour
 
                 if (val >= -Mathf.PI && val <= Mathf.PI)
                     heightMap[i, j] += (Mathf.Sin(val + Mathf.PI / 2) + 1) * height;
+
+                if (
+                    i < vertDensity || j < vertDensity ||
+                    i > resolution - vertDensity - 1 ||
+                    j > resolution - vertDensity - 1
+                    )
+                    heightMap[i, j] = -1;
             }
 
         UpdateMeshes();
@@ -134,7 +144,6 @@ public class TerrainController : MonoBehaviour
                 vertexList.Add(vert);
                 return index++;
             }
-
         }
 
         void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
@@ -161,11 +170,51 @@ public class TerrainController : MonoBehaviour
             AddTriangle(c, d, e);
         }
 
+        bool[,] filled = new bool[resolution - 1, resolution - 1];
+
+        int s = 2;
+
+        while (s < resolution) s <<= 1;
+
+        s >>= 1;
+
+        for (; s > 1; s >>= 1)
+        {
+            for (int i = 0; i < resolution - s; i += s)
+                for (int j = 0; j < resolution - s; j += s)
+                {
+                    if (filled[i, j])
+                        continue;
+
+                    bool empty = true;
+                    for (int x = 0; x <= s; x++)
+                        for (int y = 0; y <= s; y++)
+                            empty &= heightMap[i + x, j + y] < 0;
+                    
+                    if (empty)
+                    {
+                        Vector3 v0 = new Vector3(points[i, j].x, 0f, points[i, j].y);
+                        Vector3 v1 = new Vector3(points[i + s, j].x, 0f, points[i + s, j].y);
+                        Vector3 v2 = new Vector3(points[i, j + s].x, 0f, points[i, j + s].y);
+                        Vector3 v3 = new Vector3(points[i + s, j + s].x, 0f, points[i + s, j + s].y);
+
+                        AddQuad(v0, v2, v3, v1);
+
+                        for (int x = 0; x < s; x++)
+                            for (int y = 0; y < s; y++)
+                                filled[i + x, j + y] = true;
+                    }
+                }
+        }
+
         float square = size / (resolution - 1);
 
         for (int i = 0; i < resolution - 1; i++)
             for (int j = 0; j < resolution - 1; j++)
             {
+                if (filled[i, j])
+                    continue;
+
                 float val0 = heightMap[i, j];
                 float val1 = heightMap[i + 1, j];
                 float val2 = heightMap[i, j + 1];
@@ -254,14 +303,7 @@ public class TerrainController : MonoBehaviour
                         break;
 
                     case 15:
-                        if (i == 0 && j == 0)
-                            AddVert(new Vector3(-size / 2, 0f,  -size / 2));
-                        if (i == 0 && j == resolution - 2)
-                            AddVert(new Vector3(-size / 2, 0f,  size / 2));
-                        if (i == resolution - 2 && j == 0)
-                            AddVert(new Vector3(size / 2, 0f,  -size / 2));
-                        if (i == resolution - 2 && j == resolution - 2)
-                            AddVert(new Vector3(size / 2, 0f, size / 2));
+                        AddQuad(v0, v2, v3, v1);
                         break;
 
                     default:
