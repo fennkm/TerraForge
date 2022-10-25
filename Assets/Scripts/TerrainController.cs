@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
+
+using VectorSwizzling;
 
 public class TerrainController : MonoBehaviour
 {
@@ -32,12 +33,17 @@ public class TerrainController : MonoBehaviour
     public MeshFilter seaMeshFilter;
     private Mesh groundMesh;
     private Mesh seaMesh;
+    private MeshCollider groundMeshColl;
+    private MeshCollider seaMeshColl;
 
     // Start is called before the first frame update
     void Start()
     {
         groundMesh = groundMeshFilter.mesh;
         seaMesh = seaMeshFilter.mesh;
+
+        groundMeshColl = groundMeshFilter.GetComponent<MeshCollider>();
+        seaMeshColl = seaMeshFilter.GetComponent<MeshCollider>();
 
         resolution = (int) (density * size) + 1;
 
@@ -182,14 +188,10 @@ public class TerrainController : MonoBehaviour
                             
                             if (flat)
                             {
-                                Vector3 v0 = new Vector3(
-                                    points[x, y].x, heightMap[x, y], points[x, y].y);
-                                Vector3 v1 = new Vector3(
-                                    points[x + s, y].x, heightMap[x + s, y], points[x + s, y].y);
-                                Vector3 v2 = new Vector3(
-                                    points[x, y + s].x, heightMap[x, y + s], points[x, y + s].y);
-                                Vector3 v3 = new Vector3(
-                                    points[x + s, y + s].x, heightMap[x + s, y + s], points[x + s, y + s].y);
+                                Vector3 v0 = points[x, y].x0y() + heightMap[x, y]._0x0();
+                                Vector3 v1 = points[x + s, y].x0y() + heightMap[x + s, y]._0x0();
+                                Vector3 v2 = points[x, y + s].x0y() + heightMap[x, y + s]._0x0();
+                                Vector3 v3 = points[x + s, y + s].x0y() + heightMap[x + s, y + s]._0x0();
 
                                 AddQuad(v0, v2, v3, v1);
 
@@ -199,11 +201,13 @@ public class TerrainController : MonoBehaviour
                             }
                         }
         }
+        
         groundMesh.Clear();
         groundMesh.vertices = vertexList.ToArray();
-        Debug.Log(groundMesh.vertices.Length);
         groundMesh.triangles = triangleList.ToArray();
         groundMesh.RecalculateNormals();
+
+        groundMeshColl.sharedMesh = groundMesh;
     }
 
     private void UpdateSeaMesh()
@@ -278,10 +282,10 @@ public class TerrainController : MonoBehaviour
                             
                             if (empty)
                             {
-                                Vector3 v0 = new Vector3(points[x, y].x, 0f, points[x, y].y);
-                                Vector3 v1 = new Vector3(points[x + s, y].x, 0f, points[x + s, y].y);
-                                Vector3 v2 = new Vector3(points[x, y + s].x, 0f, points[x, y + s].y);
-                                Vector3 v3 = new Vector3(points[x + s, y + s].x, 0f, points[x + s, y + s].y);
+                                Vector3 v0 = points[x, y].x0y();
+                                Vector3 v1 = points[x + s, y].x0y();
+                                Vector3 v2 = points[x, y + s].x0y();
+                                Vector3 v3 = points[x + s, y + s].x0y();
 
                                 AddQuad(v0, v2, v3, v1);
 
@@ -400,6 +404,8 @@ public class TerrainController : MonoBehaviour
         seaMesh.vertices = vertexList.ToArray();
         seaMesh.triangles = triangleList.ToArray();
         seaMesh.RecalculateNormals();
+
+        seaMeshColl.sharedMesh = seaMesh;
     }
 
     // void OnDrawGizmos()
