@@ -1,2 +1,0 @@
-https://github.com/wo80/Triangle.NET
-(C# version of https://www.cs.cmu.edu/~quake/triangle.html)
