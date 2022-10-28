@@ -123,6 +123,60 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &396822417
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 396822418}
+  - component: {fileID: 396822420}
+  - component: {fileID: 396822419}
+  m_Layer: 0
+  m_Name: Base
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &396822418
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396822417}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalScale: {x: 100, y: 1, z: 100}
+  m_Children: []
+  m_Father: {fileID: 1931061582}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &396822419
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396822417}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!33 &396822420
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396822417}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &597347436
 GameObject:
   m_ObjectHideFlags: 0
@@ -134,6 +188,7 @@ GameObject:
   - component: {fileID: 597347438}
   - component: {fileID: 597347439}
   - component: {fileID: 597347440}
+  - component: {fileID: 597347437}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -141,6 +196,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!64 &597347437
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597347436}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!4 &597347438
 Transform:
   m_ObjectHideFlags: 0
@@ -308,6 +377,7 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
+  - component: {fileID: 963194229}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -380,6 +450,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 53.729, y: 0, z: 0}
+--- !u!114 &963194229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2de32a6de0dcc374eaccb58154e716a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panSpeed: 0.1
+  xLim: 64
+  yLim: 64
+  rotateSpeed: 0.1
+  zoomFactor: 0.05
+  minDist: 1
+  maxDist: 10
+  terrian: {fileID: 0}
 --- !u!1 &1738030347
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,6 +481,7 @@ GameObject:
   - component: {fileID: 1738030350}
   - component: {fileID: 1738030348}
   - component: {fileID: 1738030349}
+  - component: {fileID: 1738030351}
   m_Layer: 0
   m_Name: Sea
   m_TagString: Untagged
@@ -461,6 +552,20 @@ Transform:
   m_Father: {fileID: 1931061582}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &1738030351
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738030347}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!1 &1931061580
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,9 +595,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b026d524cf5d25042bb80f7358f7393a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  height: 1.7
-  radius: 3
-  offset: {x: 0, y: 0}
+  height1: 8
+  radius1: 30
+  offset1: {x: 0, y: 0}
+  height2: -20
+  radius2: 12
+  offset2: {x: 0, y: 0}
   groundMeshFilter: {fileID: 597347439}
   seaMeshFilter: {fileID: 1738030348}
 --- !u!4 &1931061582
@@ -508,6 +616,7 @@ Transform:
   m_Children:
   - {fileID: 597347438}
   - {fileID: 1738030350}
+  - {fileID: 396822418}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
