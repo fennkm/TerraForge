@@ -12,41 +12,28 @@ public class CameraController : MonoBehaviour
     public float rotateSpeed;
     [Range(0, 1)]
     public float zoomFactor;
-    public float minDist;
-    public float maxDist;
+    public float minZoom;
+    public float maxZoom;
 
     private Camera cam;
-    private Collider col;
-
-    private float maxHeight;
-    private float lerpVal;
-    private Vector3 skyPoint;
     private Vector3 groundPoint;
     private float clipDist;
 
     private Vector2[] mouseDownPos = new Vector2[3];
     private Vector3 panStartPos;
     private Vector3 orbitStartPos;
-    private Vector2 orbitStartRots;
-    private Transform XGimble;
-    private Transform YGimble;
+    private float orbitStartPitch;
 
     private int mode;
-
-    public TerrainController terrian;
 
     // Start is called before the first frame update
     void Start()
     {
         cam = GetComponent<Camera>();
-        col = GetComponent<Collider>();
 
         clipDist = (transform.position - cam.ScreenToWorldPoint(new Vector3(0, 0, cam.nearClipPlane))).magnitude;
-        maxHeight = transform.position.y;
 
-        skyPoint = transform.position;
         groundPoint = getGroundPoint();
-        lerpVal = 1;
     }
 
     // Update is called once per frame
@@ -64,13 +51,13 @@ public class CameraController : MonoBehaviour
             {
                 mouseDownPos[1] = Input.mousePosition;
                 orbitStartPos = transform.position;
-                orbitStartRots = new Vector2(transform.eulerAngles.x, transform.eulerAngles.y);
+                orbitStartPitch = transform.eulerAngles.x;
                 mode = 1;
             }
             if (Input.GetMouseButton(2))
             {
                 mouseDownPos[2] = Input.mousePosition;
-                panStartPos = skyPoint;
+                panStartPos = transform.position;
                 mode = 2;
             }
         }
@@ -80,20 +67,17 @@ public class CameraController : MonoBehaviour
             Vector2 delta = Input.mousePosition.xy() - mouseDownPos[1];
 
             float angleY = delta.x * rotateSpeed;
-            float angleX = Mathf.Clamp(-delta.y * rotateSpeed, 5 - orbitStartRots.x, 85 - orbitStartRots.x);
-            Debug.Log(angleX);
-
-            Vector3 groundToCam = (orbitStartPos - groundPoint);//.x0z().magnitude;
+            float angleX = Mathf.Clamp(-delta.y * rotateSpeed, 5 - orbitStartPitch, 85 - orbitStartPitch);
 
             Vector3 newPos =  
                 groundPoint.x0z() +
-                Quaternion.Euler(0f, angleY, 0f) * groundToCam.x0z() +
+                Quaternion.Euler(0f, angleY, 0f) * (orbitStartPos - groundPoint) +
                 transform.position._0y0();
 
-            groundToCam = (orbitStartPos._0y0() + newPos.x0z() - groundPoint);
+            Vector3 referenceVec = orbitStartPos._0y0() + newPos.x0z() - groundPoint;
             
-            float heading = Vector3.Angle(Vector3.back, groundToCam.x0z());
-            if (groundToCam.x < 0)
+            float heading = Vector3.Angle(Vector3.back, referenceVec.x0z());
+            if (referenceVec.x < 0)
                 heading = 360 - heading;
             
             newPos = 
@@ -101,69 +85,69 @@ public class CameraController : MonoBehaviour
                 Quaternion.Euler(
                     angleX * Mathf.Cos(heading * Mathf.Deg2Rad), 
                     0f, 
-                    angleX * Mathf.Sin(heading * Mathf.Deg2Rad)) * groundToCam;
-
-            groundToCam = newPos - groundPoint;
-
-            RaycastHit ray;
-
-            if (Physics.Linecast(groundPoint, newPos, out ray))
-                newPos = ray.point - groundToCam.normalized * clipDist * 2;
+                    angleX * Mathf.Sin(heading * Mathf.Deg2Rad)) * referenceVec;
 
             transform.position = newPos;
-                
-            transform.LookAt(groundPoint, Vector3.up);
+            
+            RaycastHit hit = new RaycastHit();
+        
+            if(Physics.Linecast(groundPoint, transform.position, out hit))
+            {
+                transform.LookAt(groundPoint, Vector3.up);
 
-            skyPoint = getSkyPoint();
+                transform.position = hit.point + transform.forward * clipDist;
 
-            lerpVal = (transform.position - groundPoint).magnitude / (skyPoint - groundPoint).magnitude;
+                mouseDownPos[1] = Input.mousePosition;
+                orbitStartPos = transform.position;
+                orbitStartPitch = transform.eulerAngles.x;
+            }
+            else
+                transform.LookAt(groundPoint, Vector3.up);
         }  
         else if (Input.GetMouseButton(2) && mode == 2)
         {
-            Vector3 skyToCam = skyPoint - transform.position;
             float viewAngle = 
-                Vector3.Angle(Vector3.back, skyPoint.x0z() - groundPoint.x0z());
+                Vector3.Angle(Vector3.back, transform.position.x0z() - groundPoint.x0z());
 
-            if (skyPoint.x > groundPoint.x)
+            if (transform.position.x > groundPoint.x)
                 viewAngle = 360f - viewAngle;
 
             Vector2 delta = Input.mousePosition.xy() - mouseDownPos[2];
-            skyPoint = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y() * panSpeed;
+            transform.position = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y() * panSpeed;
 
             groundPoint = getGroundPoint();
 
             if (groundPoint.x > xLim )
-                skyPoint += (xLim - groundPoint.x).x00();
+                transform.position += (xLim - groundPoint.x).x00();
             else if (groundPoint.x < -xLim)
-                skyPoint += (-xLim - groundPoint.x).x00();
+                transform.position += (-xLim - groundPoint.x).x00();
 
             if (groundPoint.z > yLim )
-                skyPoint += (yLim - groundPoint.z)._00x();
+                transform.position += (yLim - groundPoint.z)._00x();
             else if (groundPoint.z < -yLim)
-                skyPoint += (-yLim - groundPoint.z)._00x();
+                transform.position += (-yLim - groundPoint.z)._00x();
+
+            while (Physics.CheckSphere(transform.position, clipDist))
+            {
+                transform.position += transform.up * clipDist;
+                panStartPos += transform.up * clipDist;
+            }
 
             groundPoint = getGroundPoint();
-
-            Vector3 newCamPos = skyPoint - skyToCam;
-
-            transform.position = newCamPos;
-
-            if (Physics.CheckSphere(transform.position, clipDist))
-            {
-                lerpVal = 0.1f;
-                transform.position = Vector3.Lerp(groundPoint, skyPoint, lerpVal);
-            }
-            else
-                lerpVal = (transform.position - groundPoint).magnitude / (skyPoint - groundPoint).magnitude;
         }
 
         if (mode == 0 && Input.mouseScrollDelta.y != 0)
         {
-            lerpVal *= (Mathf.Sign(Input.mouseScrollDelta.y) == 1 ? 1 - zoomFactor : 1 / (1 - zoomFactor));
+            groundPoint = getGroundPoint();
 
-            lerpVal = Mathf.Max(0.1f, lerpVal);//Mathf.Clamp(lerpVal, 0.1f, 1f);
+            Vector3 groundToCam = transform.position - groundPoint;
 
-            transform.position = Vector3.LerpUnclamped(groundPoint, skyPoint, lerpVal);
+            Vector3 newPos = groundPoint + groundToCam * (1 + -Input.mouseScrollDelta.y * zoomFactor);
+
+            if (!Physics.CheckSphere(newPos, clipDist) &&
+                groundToCam.magnitude >= minZoom &&
+                groundToCam.magnitude <= maxZoom)
+                transform.position = newPos;
         }
     }
 
@@ -171,19 +155,10 @@ public class CameraController : MonoBehaviour
     {
         RaycastHit hit;
 
-        Physics.Raycast(skyPoint, transform.forward, out hit);
+        Physics.Raycast(transform.position, transform.forward, out hit);
 
         return hit.point;
     }
-
-    private Vector3 getSkyPoint()
-    {
-        float angle = Vector3.Angle(Vector3.up, -transform.forward);
-
-        return groundPoint + 
-            -transform.forward * (maxHeight - groundPoint.y) / Mathf.Cos(Mathf.Deg2Rad * angle);
-    }
-
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
@@ -192,6 +167,6 @@ public class CameraController : MonoBehaviour
 
         Gizmos.color = Color.green;
 
-        Gizmos.DrawSphere(skyPoint, .5f);
+        Gizmos.DrawLine(groundPoint, transform.position);
     }
 }
