@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 using VectorSwizzling;
@@ -21,11 +22,12 @@ public class TerrainController : MonoBehaviour
     private float prevRadius2;
     private Vector2 prevOffset2;
 
-    private float density = 2f; // Squares per unit
+    private float density = 1f; // Squares per unit
     private float size = 128f;
     private int resolution; // Number of verts on each side
 
     private Vector3[] groundVerts;
+    private Vector2[] groundUVs;
     private int[] groundTriangles;
 
     private float[,] heightMap;
@@ -37,9 +39,11 @@ public class TerrainController : MonoBehaviour
     private MeshCollider groundMeshColl;
     private MeshCollider seaMeshColl;
 
-    // Start is called before the first frame update
+    private TerrainUIPainter terrainUIPainter;
     void Awake()
     {
+        terrainUIPainter = GetComponent<TerrainUIPainter>();
+
         groundMesh = groundMeshFilter.mesh;
         seaMesh = seaMeshFilter.mesh;
 
@@ -49,14 +53,18 @@ public class TerrainController : MonoBehaviour
         resolution = (int) (density * size) + 1;
 
         groundVerts = new Vector3[resolution * resolution];
+        groundUVs = new Vector2[resolution * resolution];
 
         float vertSeparation = 1f / density;
         Vector3 topRight = new Vector3(size / 2, 0f, size / 2);
 
         for (int i = 0; i < resolution; i++)
             for (int j = 0; j < resolution; j++)
-                groundVerts[i *  resolution + j] = 
-                    new Vector3(vertSeparation * i, -1f, vertSeparation * j) - topRight;
+            {
+                Vector3 coord = new Vector3(vertSeparation * i, -1f, vertSeparation * j);
+                groundVerts[i *  resolution + j] = coord - topRight;
+                groundUVs[i *  resolution + j] = coord.xz() / size;
+            }
 
         groundTriangles = new int[(resolution - 1) * (resolution - 1) * 2 * 6];
 
@@ -73,7 +81,17 @@ public class TerrainController : MonoBehaviour
                 groundTriangles[index + 5] = i * resolution + (j + 1);
             }
 
+        groundMesh.SetVertices(groundVerts);
+        groundMesh.SetUVs(0, groundUVs);
+        groundMesh.SetTriangles(groundTriangles, 0);
+
         GenerateHeightMap();
+        UpdateMeshes();
+    }
+
+    void Start()
+    {
+        terrainUIPainter.setTerrainSize(size);
     }
 
     // Update is called once per frame
@@ -81,7 +99,20 @@ public class TerrainController : MonoBehaviour
     {
         if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
         || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
+        {
             GenerateHeightMap();
+            UpdateMeshes();
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
+            terrainUIPainter.decreaseCursorSize();
+        else if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y > 0)
+            terrainUIPainter.increaseCursorSize();
+    }
+
+    void FixedUpdate()
+    {
+        terrainUIPainter.paintCursor();
     }
 
     private void GenerateHeightMap()
@@ -127,8 +158,6 @@ public class TerrainController : MonoBehaviour
                     )
                     heightMap[i, j] = -1;
             }
-
-        UpdateMeshes();
     }
 
     private Vector3 getGroundPoint(int x, int y) { return groundVerts[x * resolution + y]; }
@@ -145,10 +174,8 @@ public class TerrainController : MonoBehaviour
             for (int j = 0; j < resolution; j++)
                 groundVerts[i * resolution + j].y = heightMap[i, j];
 
-        groundMesh.vertices = groundVerts;
-        groundMesh.triangles = groundTriangles;
+        groundMesh.SetVertices(groundVerts);
         groundMesh.RecalculateNormals();
-
         groundMeshColl.sharedMesh = groundMesh;
     }
 
@@ -320,23 +347,11 @@ public class TerrainController : MonoBehaviour
             }
 
         seaMesh.Clear(); // VERY IMPORTANT IF CHANGING NUMBER OF VERTICES
-        seaMesh.vertices = vertexList.ToArray();
-        seaMesh.triangles = triangleList.ToArray();
+        seaMesh.SetVertices(vertexList.ToArray());
+        seaMesh.SetUVs(0, vertexList.Select(e => new Vector2(e.x, e.y)).ToArray());
+        seaMesh.SetTriangles(triangleList.ToArray(), 0);
         seaMesh.RecalculateNormals();
-
-        Debug.Log(seaMesh.vertices.Length);
-        Debug.Log(seaMesh.triangles.Length);
 
         seaMeshColl.sharedMesh = seaMesh;
     }
-
-    // void OnDrawGizmos()
-    // {
-    //     Gizmos.color = Color.red;
-        
-    //     for (int i = 0; i < seaMesh.vertices.Length; i++)
-    //     {
-    //         Gizmos.DrawSphere(groundMesh.vertices[i], .1f);
-    //     }
-    // }
 }

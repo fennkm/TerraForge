@@ -26,6 +26,8 @@ public class CameraController : MonoBehaviour
 
     private int mode;
 
+    public TerrainUIPainter terrainUIPainter;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +46,11 @@ public class CameraController : MonoBehaviour
             mode = 0;
         else if (mode == 2 && !Input.GetMouseButton(2))
             mode = 0;
+        
+        if (mode == 0)
+            terrainUIPainter.showCursor();
+        else
+            terrainUIPainter.hideCursor();
 
         if (mode == 0)
         {
@@ -136,13 +143,15 @@ public class CameraController : MonoBehaviour
             groundPoint = getGroundPoint();
         }
 
-        if (mode == 0 && Input.mouseScrollDelta.y != 0)
+        if (mode == 0 && !Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y != 0)
         {
             groundPoint = getGroundPoint();
 
             Vector3 groundToCam = transform.position - groundPoint;
 
             Vector3 newPos = groundPoint + groundToCam * (1 + -Input.mouseScrollDelta.y * zoomFactor);
+
+            groundToCam = newPos - groundPoint;
 
             if (!Physics.CheckSphere(newPos, clipDist) &&
                 groundToCam.magnitude >= minZoom &&
