@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using VectorSwizzling;
 using TerrainMesh;
 
 public class TerrainController : MonoBehaviour
@@ -27,8 +26,6 @@ public class TerrainController : MonoBehaviour
 
     public MeshFilter groundMeshFilter;
     public MeshFilter seaMeshFilter;
-    private MeshCollider groundMeshColl;
-    private MeshCollider seaMeshColl;
 
     private TerrainUIPainter terrainUIPainter;
     private TerrainBuilder terrainBuilder;
@@ -37,10 +34,7 @@ public class TerrainController : MonoBehaviour
     {
         terrainUIPainter = GetComponent<TerrainUIPainter>();
 
-        groundMeshColl = groundMeshFilter.GetComponent<MeshCollider>();
-        seaMeshColl = seaMeshFilter.GetComponent<MeshCollider>();
-
-        terrainBuilder = new TerrainBuilder(size, density);
+        terrainBuilder = new TerrainBuilder(size, density, groundMeshFilter, seaMeshFilter);
     }
 
     void Start()
@@ -53,17 +47,7 @@ public class TerrainController : MonoBehaviour
     {
         if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
         || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
-        {
-            Mesh groundMesh;
-            Mesh seaMesh;
-            terrainBuilder.UpdateHeightMap(GenerateHeightMap(), out groundMesh, out seaMesh);
-
-            groundMeshFilter.mesh = groundMesh;
-            groundMeshColl.sharedMesh = groundMesh;
-
-            seaMeshFilter.mesh = seaMesh;
-            seaMeshColl.sharedMesh = seaMesh;
-        }
+            terrainBuilder.UpdateHeightMap(GenerateHeightMap());
 
         if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
             terrainUIPainter.decreaseCursorSize();

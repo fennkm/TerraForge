@@ -20,13 +20,26 @@ namespace TerrainMesh
 
         private float[,] heightMap;
 
+        private MeshFilter ground;
+
         private Mesh groundMesh;
         private Mesh seaMesh;
+        private MeshCollider groundMeshColl;
+        private MeshCollider seaMeshColl;
 
-        public TerrainBuilder(float size, float density)
+        public TerrainBuilder(float size, float density, MeshFilter groundMeshFilter, MeshFilter seaMeshFilter)
         {
             this.size = size;
             this.density = density;
+
+            // groundMeshFilter.sharedMesh = new Mesh();
+            // seaMeshFilter.sharedMesh = new Mesh();
+
+            groundMesh = groundMeshFilter.mesh;
+            seaMesh = seaMeshFilter.mesh;
+
+            groundMeshColl = groundMeshFilter.GetComponent<MeshCollider>();
+            seaMeshColl = seaMeshFilter.GetComponent<MeshCollider>();
             
             resolution = (int) (density * size) + 1;
 
@@ -63,17 +76,17 @@ namespace TerrainMesh
                     groundTriangles[index + 5] = i * resolution + (j + 1);
                 }
 
-            groundMesh = new Mesh();
-
             groundMesh.SetVertices(groundVerts);
             groundMesh.SetTriangles(groundTriangles, 0);
             groundMesh.SetUVs(0, groundUVs);
+            groundMesh.RecalculateNormals();
 
-            seaMesh = new Mesh();
+            groundMeshColl.sharedMesh = groundMesh;
+
             UpdateSeaMesh();
         }
 
-        public void UpdateHeightMap(float[,] values, out Mesh groundMesh, out Mesh seaMesh) 
+        public void UpdateHeightMap(float[,] values) 
         {
             if (values.GetLength(0) != resolution || values.GetLength(1) != resolution)
                 throw new System.IndexOutOfRangeException(
@@ -83,9 +96,6 @@ namespace TerrainMesh
             heightMap = values;
 
             UpdateMeshes();
-
-            groundMesh = this.groundMesh;
-            seaMesh = this.seaMesh;
         }
 
         public float[,] getHeightMap() { return heightMap; }
@@ -106,6 +116,8 @@ namespace TerrainMesh
 
             groundMesh.SetVertices(groundVerts);
             groundMesh.RecalculateNormals();
+
+            groundMeshColl.sharedMesh = groundMesh;
         }
 
         private void UpdateSeaMesh()
@@ -120,6 +132,8 @@ namespace TerrainMesh
             seaMesh.SetUVs(0, vertices.Select(e => new Vector2(e.x, e.y)).ToArray());
             seaMesh.SetTriangles(triangles, 0);
             seaMesh.RecalculateNormals();
+
+            seaMeshColl.sharedMesh = seaMesh;
         }
     }
 }
