@@ -35,7 +35,7 @@ public class CameraController : MonoBehaviour
 
         clipDist = (transform.position - cam.ScreenToWorldPoint(new Vector3(0, 0, cam.nearClipPlane))).magnitude;
 
-        groundPoint = getGroundPoint();
+        groundPoint = GetGroundPoint();
     }
 
     // Update is called once per frame
@@ -48,9 +48,9 @@ public class CameraController : MonoBehaviour
             mode = 0;
         
         if (mode == 0)
-            terrainUIPainter.showCursor();
+            terrainUIPainter.ShowCursor();
         else
-            terrainUIPainter.hideCursor();
+            terrainUIPainter.HideCursor();
 
         if (mode == 0)
         {
@@ -122,7 +122,7 @@ public class CameraController : MonoBehaviour
             Vector2 delta = Input.mousePosition.xy() - mouseDownPos[2];
             transform.position = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y() * panSpeed;
 
-            groundPoint = getGroundPoint();
+            groundPoint = GetGroundPoint();
 
             if (groundPoint.x > xLim )
                 transform.position += (xLim - groundPoint.x).x00();
@@ -140,12 +140,12 @@ public class CameraController : MonoBehaviour
                 panStartPos += transform.up * clipDist;
             }
 
-            groundPoint = getGroundPoint();
+            groundPoint = GetGroundPoint();
         }
 
         if (mode == 0 && !Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y != 0)
         {
-            groundPoint = getGroundPoint();
+            groundPoint = GetGroundPoint();
 
             Vector3 groundToCam = transform.position - groundPoint;
 
@@ -160,7 +160,7 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    private Vector3 getGroundPoint()
+    private Vector3 GetGroundPoint()
     {
         RaycastHit hit;
 

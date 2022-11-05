@@ -50,14 +50,14 @@ public class TerrainController : MonoBehaviour
             terrainBuilder.UpdateHeightMap(GenerateHeightMap());
 
         if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
-            terrainUIPainter.decreaseCursorSize();
+            terrainUIPainter.DecreaseCursorSize();
         else if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y > 0)
-            terrainUIPainter.increaseCursorSize();
+            terrainUIPainter.IncreaseCursorSize();
     }
 
     void FixedUpdate()
     {
-        terrainUIPainter.paintCursor();
+        terrainUIPainter.PaintCursor();
     }
 
     private float[,] GenerateHeightMap()

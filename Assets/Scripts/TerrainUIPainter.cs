@@ -29,20 +29,20 @@ public class TerrainUIPainter : MonoBehaviour
         this.terrainSize = terrainSize;
     }
 
-    public void showCursor() { cursorVisible = true; }
-    public void hideCursor() { cursorVisible = false; }
-    public void increaseCursorSize() { modifyCursorSize(1);  }
-    public void decreaseCursorSize() { modifyCursorSize(-1); }
+    public void ShowCursor() { cursorVisible = true; }
+    public void HideCursor() { cursorVisible = false; }
+    public void IncreaseCursorSize() { ModifyCursorSize(1);  }
+    public void DecreaseCursorSize() { ModifyCursorSize(-1); }
 
-    private void modifyCursorSize(int dir)
+    private void ModifyCursorSize(int dir)
     {
         outerCursor.sizeDelta = 
             Mathf.Clamp(outerCursor.sizeDelta.x * (1 + dir * resizeFactor), minSize, maxSize).xx0();
     }
 
-    public void paintCursor()
+    public void PaintCursor()
     {
-        terrainMousePos = getMouseTerrainPoint().xz();
+        terrainMousePos = GetMouseTerrainPoint().xz();
 
         if (!cursorVisible ||
             terrainMousePos == Vector2.zero ||
@@ -65,7 +65,7 @@ public class TerrainUIPainter : MonoBehaviour
         outerCursor.localPosition = cursorPos;
     }
 
-    private Vector3 getMouseTerrainPoint()
+    private Vector3 GetMouseTerrainPoint()
     {
         RaycastHit hit;
 
