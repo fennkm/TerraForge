@@ -21,7 +21,8 @@ public class TerrainUIPainter : MonoBehaviour
     private Vector2 terrainMousePos;
     private Vector2 cursorPos;
 
-    private bool cursorVisible;
+    private bool cursorVisible = true;
+    private bool terrainFocussed = true;
 
     public void setTerrainSize(float terrainSize)
     {
@@ -31,6 +32,9 @@ public class TerrainUIPainter : MonoBehaviour
 
     public void ShowCursor() { cursorVisible = true; }
     public void HideCursor() { cursorVisible = false; }
+    
+    public void Focus() { terrainFocussed = true; }
+    public void Unfocus() { terrainFocussed = false; }
     public void IncreaseCursorSize() { ModifyCursorSize(1);  }
     public void DecreaseCursorSize() { ModifyCursorSize(-1); }
 
@@ -44,7 +48,7 @@ public class TerrainUIPainter : MonoBehaviour
     {
         terrainMousePos = GetMouseTerrainPoint().xz();
 
-        if (!cursorVisible ||
+        if (!cursorVisible || !terrainFocussed ||
             terrainMousePos == Vector2.zero ||
             terrainMousePos.x >  terrainSize / 2 ||
             terrainMousePos.x < -terrainSize / 2 ||
