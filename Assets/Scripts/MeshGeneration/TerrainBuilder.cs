@@ -129,7 +129,7 @@ namespace TerrainMesh
 
             seaMesh.Clear(); // VERY IMPORTANT IF CHANGING NUMBER OF VERTICES
             seaMesh.SetVertices(vertices);
-            seaMesh.SetUVs(0, vertices.Select(e => new Vector2(e.x, e.y)).ToArray());
+            seaMesh.SetUVs(0, vertices.Select(e => new Vector2(e.x, e.z)).ToArray());
             seaMesh.SetTriangles(triangles, 0);
             seaMesh.RecalculateNormals();
 
