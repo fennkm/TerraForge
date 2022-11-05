@@ -3,7 +3,9 @@ Shader "Custom/RoughWaterShader"
     Properties
     {
         _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        _Glossiness ("Smoothness", Range(0,1)) = 0.5
+        _Metallic ("Metallic", Range(0,1)) = 0.0
+
         _ScrollSpeedX1("X speed 1", Range(-10, 10)) = 2
         _ScrollSpeedY1("Y speed 1", Range(-10, 10)) = 2
         _NormalTex1("Bump 1", 2D) = "bump" {}
@@ -45,6 +47,8 @@ Shader "Custom/RoughWaterShader"
         fixed _ScrollSpeedX2;
         fixed _ScrollSpeedY2;
 
+        half _Glossiness;
+        half _Metallic;
         fixed4 _Color;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
@@ -56,7 +60,9 @@ Shader "Custom/RoughWaterShader"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed4 c = _Color;//tex2D(_MainTex, uvScroll) * _Color;
+            fixed4 c = _Color;
+            o.Metallic = _Metallic;
+            o.Smoothness = _Glossiness;
             o.Albedo = c.rgb;
             o.Alpha = c.a;
 
@@ -70,10 +76,8 @@ Shader "Custom/RoughWaterShader"
             float3 normalMap2 = UnpackNormal(tex2D(_NormalTex2, uvScrollNormal2));
 
             // normal map intensity part 
-            normalMap1.x *= _NormalIntensity1;
-            normalMap1.y *= _NormalIntensity1;
-            normalMap2.x *= _NormalIntensity2;
-            normalMap2.y *= _NormalIntensity2;
+            normalMap1 *= _NormalIntensity1;
+            normalMap2 *= _NormalIntensity2;
             o.Normal = normalize(normalMap1.rgb + normalMap2.rgb);
         }
         ENDCG
