@@ -2,9 +2,9 @@ Shader "Custom/RoughWaterShader"
 {
     Properties
     {
-        _Color ("Color", Color) = (1,1,1,1)
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
+
+        _MainTex("Texture", 2D) = "tex" {}
+        _Resolution("Terrain Size", float) = 129
 
         _ScrollSpeedX1("X speed 1", Range(-10, 10)) = 2
         _ScrollSpeedY1("Y speed 1", Range(-10, 10)) = 2
@@ -14,6 +14,9 @@ Shader "Custom/RoughWaterShader"
         _ScrollSpeedY2("Y speed 2", Range(-10, 10)) = 2
         _NormalTex2("Bump 2", 2D) = "bump" {}
         _NormalIntensity2("Normal Intensity 2", Range(0, 5)) = 1
+        
+        _Glossiness ("Smoothness", Range(0,1)) = 0.5
+        _Metallic ("Metallic", Range(0,1)) = 0.0
     }
     SubShader
     {
@@ -28,8 +31,6 @@ Shader "Custom/RoughWaterShader"
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
-        sampler2D _MainTex;
-
         struct Input
         {
             float2 uv_MainTex;
@@ -37,8 +38,15 @@ Shader "Custom/RoughWaterShader"
             float2 uv_NormalTex2;
         };
 
+        sampler2D _MainTex;
+
         sampler2D _NormalTex1;
         sampler2D _NormalTex2;
+
+        float _Resolution;
+
+        fixed4 _ShallowColour;
+        fixed4 _DeepColour;
 
         float _NormalIntensity1;
         fixed _ScrollSpeedX1;
@@ -61,11 +69,36 @@ Shader "Custom/RoughWaterShader"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed4 c = _Color;
+            float Pi = 6.28318530718; // Pi*2
+    
+            // GAUSSIAN BLUR SETTINGS {{{
+            float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+            float Quality = 3.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+            float Size = 8.0; // BLUR SIZE (Radius)
+            // GAUSSIAN BLUR SETTINGS }}}
+
+            float2 uv = IN.uv_MainTex / _Resolution + fixed2(.5, .5);
+            fixed4 col = tex2D(_MainTex, uv);
+        
+            float radius = Size/_Resolution;
+            
+            // Blur calculations
+            for( float d=0.0; d<Pi; d+=Pi/Directions)
+            {
+                for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
+                {
+                    col += tex2D( _MainTex, uv + float2(cos(d), sin(d)) * radius * i);		
+                }
+            }
+            
+            // Output to screen
+            col /= Quality * Directions - 15.0;
+            
+            o.Albedo = col.rgb;
+            o.Alpha = col.a;
+
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Albedo = c.rgb;
-            o.Alpha = c.a;
 
             // normal map scrolling part
             float2 uvScrollNormal1 = IN.uv_NormalTex1;

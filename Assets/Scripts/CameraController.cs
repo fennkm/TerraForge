@@ -102,7 +102,7 @@ public class CameraController : MonoBehaviour
             {
                 transform.LookAt(groundPoint, Vector3.up);
 
-                transform.position = hit.point + transform.forward * clipDist;
+                transform.position = hit.point + transform.forward * clipDist * 2f;
 
                 mouseDownPos[1] = Input.mousePosition;
                 orbitStartPos = transform.position;
@@ -136,8 +136,8 @@ public class CameraController : MonoBehaviour
 
             while (Physics.CheckSphere(transform.position, clipDist))
             {
-                transform.position += transform.up * clipDist;
-                panStartPos += transform.up * clipDist;
+                transform.position += transform.up * clipDist * 3f;
+                panStartPos += transform.up * clipDist * 3f;
             }
 
             groundPoint = GetGroundPoint();
@@ -153,7 +153,7 @@ public class CameraController : MonoBehaviour
 
             groundToCam = newPos - groundPoint;
 
-            if (!Physics.CheckSphere(newPos, clipDist) &&
+            if (!Physics.CheckSphere(newPos, clipDist * 2f) &&
                 groundToCam.magnitude >= minZoom &&
                 groundToCam.magnitude <= maxZoom)
                 transform.position = newPos;

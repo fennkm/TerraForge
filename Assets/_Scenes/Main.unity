@@ -4285,12 +4285,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b026d524cf5d25042bb80f7358f7393a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  height1: 8
-  radius1: 30
+  height1: 13
+  radius1: 40
   offset1: {x: 0, y: 0}
   height2: -20
   radius2: 12
   offset2: {x: 0, y: 0}
+  minWaterDepth: 1
+  maxWaterDepth: 10
+  shallowWaterColour: {r: 0, g: 0.5200001, b: 0.6117647, a: 0.50980395}
+  deepWaterColour: {r: 0.14315297, g: 0.27232155, b: 0.6117647, a: 0.94509804}
   groundMeshFilter: {fileID: 597347439}
   seaMeshFilter: {fileID: 1738030348}
 --- !u!4 &1931061582

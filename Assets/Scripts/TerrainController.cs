@@ -13,6 +13,11 @@ public class TerrainController : MonoBehaviour
     public float height2;
     public float radius2;
     public Vector2 offset2;
+    
+    public float minWaterDepth;
+    public float maxWaterDepth;
+    public Color shallowWaterColour;
+    public Color deepWaterColour;
 
     private float prevHeight1;
     private float prevRadius1;
@@ -23,6 +28,7 @@ public class TerrainController : MonoBehaviour
 
     private float density = 1f; // Squares per unit
     private float size = 128f;
+    private float[,] heightMap;
 
     public MeshFilter groundMeshFilter;
     public MeshFilter seaMeshFilter;
@@ -47,7 +53,10 @@ public class TerrainController : MonoBehaviour
     {
         if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
         || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
-            terrainBuilder.UpdateHeightMap(GenerateHeightMap());
+        {
+            GenerateHeightMap();
+            terrainBuilder.UpdateHeightMap(heightMap);
+        }
 
         if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
             terrainUIPainter.DecreaseCursorSize();
@@ -60,7 +69,7 @@ public class TerrainController : MonoBehaviour
         terrainUIPainter.PaintCursor();
     }
 
-    private float[,] GenerateHeightMap()
+    private void GenerateHeightMap()
     {
         int resolution = (int) (size * density) + 1;
 
@@ -71,12 +80,12 @@ public class TerrainController : MonoBehaviour
         prevRadius2 = radius2;
         prevOffset2 = offset2;
 
-        float[,] heightMap = new float[resolution, resolution];
+        heightMap = new float[resolution, resolution];
 
         for (int i = 0; i < resolution; i++)
             for (int j = 0; j < resolution; j++)
             {
-                heightMap[i, j] = -1;
+                heightMap[i, j] = -maxWaterDepth;
 
                 Vector2 disp1 = 
                     new Vector2(i - resolution / 2f + 0.5f, j - resolution / 2f + 0.5f) - offset1 * density;
@@ -103,9 +112,21 @@ public class TerrainController : MonoBehaviour
                     i > (resolution - 1) - density * size / 10 ||
                     j > (resolution - 1) - density * size / 10
                     )
-                    heightMap[i, j] = -1;
+                    heightMap[i, j] = -maxWaterDepth;
             }
-        
-        return heightMap;
+
+        Texture2D waterTex = new Texture2D(resolution, resolution);
+
+        for (int i = 0; i < resolution; i++)
+            for (int j = 0;  j < resolution; j++)
+            {
+                float depthValue = Mathf.InverseLerp(minWaterDepth, maxWaterDepth, -heightMap[i, j]);
+                waterTex.SetPixel(i, j, Color.Lerp(shallowWaterColour, deepWaterColour, depthValue));
+            }
+
+        waterTex.Apply();
+
+        seaMeshFilter.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", waterTex);
+        seaMeshFilter.GetComponent<MeshRenderer>().material.SetFloat("_Resolution", resolution);
     }
 }
