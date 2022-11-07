@@ -56,6 +56,7 @@ public class CameraController : MonoBehaviour
         {
             if (Input.GetMouseButton(1))
             {
+                groundPoint = GetGroundPoint();
                 mouseDownPos[1] = Input.mousePosition;
                 orbitStartPos = transform.position;
                 orbitStartPitch = transform.eulerAngles.x;
@@ -95,21 +96,15 @@ public class CameraController : MonoBehaviour
                     angleX * Mathf.Sin(heading * Mathf.Deg2Rad)) * referenceVec;
 
             transform.position = newPos;
-            
-            RaycastHit hit = new RaycastHit();
-        
-            if(Physics.Linecast(groundPoint, transform.position, out hit))
+
+            while (Physics.CheckSphere(transform.position, clipDist))
             {
-                transform.LookAt(groundPoint, Vector3.up);
-
-                transform.position = hit.point + transform.forward * clipDist * 2f;
-
-                mouseDownPos[1] = Input.mousePosition;
-                orbitStartPos = transform.position;
-                orbitStartPitch = transform.eulerAngles.x;
+                transform.position += transform.up * clipDist;
+                orbitStartPos += transform.up * clipDist;
+                orbitStartPitch = transform.eulerAngles.x - angleX;
             }
-            else
-                transform.LookAt(groundPoint, Vector3.up);
+
+            transform.LookAt(groundPoint, Vector3.up);
         }  
         else if (Input.GetMouseButton(2) && mode == 2)
         {
@@ -136,8 +131,8 @@ public class CameraController : MonoBehaviour
 
             while (Physics.CheckSphere(transform.position, clipDist))
             {
-                transform.position += transform.up * clipDist * 3f;
-                panStartPos += transform.up * clipDist * 3f;
+                transform.position += transform.up * clipDist;
+                panStartPos += transform.up * clipDist;
             }
 
             groundPoint = GetGroundPoint();
