@@ -4,17 +4,13 @@ using UnityEngine;
 
 using VectorSwizzling;
 
-public class TerrainUIPainter : MonoBehaviour
+public class TerrainUIController : MonoBehaviour
 {
     public Camera mainCamera;
     public Camera uiCamera;
     public RectTransform floorCanvas;
     public RectTransform innerCursor;
     public RectTransform outerCursor;
-
-    public float resizeFactor;
-    public float minSize;
-    public float maxSize;
 
     private float terrainSize;
 
@@ -24,31 +20,41 @@ public class TerrainUIPainter : MonoBehaviour
     private bool cursorVisible = true;
     private bool terrainFocussed = true;
 
-    public void setTerrainSize(float terrainSize)
-    {
-        uiCamera.orthographicSize = terrainSize / 2;
-        this.terrainSize = terrainSize;
-    }
+    public TerrainController terrainController;
 
     public void ShowCursor() { cursorVisible = true; }
     public void HideCursor() { cursorVisible = false; }
     
     public void Focus() { terrainFocussed = true; }
     public void Unfocus() { terrainFocussed = false; }
-    public void IncreaseCursorSize() { ModifyCursorSize(1);  }
-    public void DecreaseCursorSize() { ModifyCursorSize(-1); }
 
-    private void ModifyCursorSize(int dir)
+    void Start()
     {
-        outerCursor.sizeDelta = 
-            Mathf.Clamp(outerCursor.sizeDelta.x * (1 + dir * resizeFactor), minSize, maxSize).xx0();
+        terrainSize = terrainController.GetSize();
+        uiCamera.orthographicSize = terrainSize / 2;
     }
 
-    public void PaintCursor()
+    void Update()
+    {
+    }
+
+    void FixedUpdate()
+    {
+        PaintCursor();
+    }
+
+    public float GetTerrainSize() { return terrainSize; }
+
+    public void SetCursorSize(float val)
+    {
+        outerCursor.sizeDelta = val.xx0();
+    }
+
+    private void PaintCursor()
     {
         terrainMousePos = GetMouseTerrainPoint().xz();
 
-        if (!cursorVisible || !terrainFocussed ||
+        if (!CursorActive() ||
             terrainMousePos == Vector2.zero ||
             terrainMousePos.x >  terrainSize / 2 ||
             terrainMousePos.x < -terrainSize / 2 ||
@@ -69,6 +75,8 @@ public class TerrainUIPainter : MonoBehaviour
         outerCursor.localPosition = cursorPos;
     }
 
+    public bool CursorActive() { return cursorVisible && terrainFocussed; }
+
     private Vector3 GetMouseTerrainPoint()
     {
         RaycastHit hit;
@@ -86,6 +94,14 @@ public class TerrainUIPainter : MonoBehaviour
             return hit.point;
         else
             return Vector3.zero;
+    }
+
+    public Vector2 GetMouseGridPos()
+    {
+        if (terrainMousePos == Vector2.zero)
+            return Vector2.one * -1;
+        else
+            return (terrainMousePos + (terrainController.GetSize() / 2).xx()) / terrainController.GetDensity();
     }
 
     void OnDrawGizmos()
@@ -106,5 +122,15 @@ public class TerrainUIPainter : MonoBehaviour
                 1 << 3);
 
         Gizmos.DrawLine(mainCamera.transform.position, hit.point);
+    }
+
+    public float UIToWorld()
+    {
+        return GetTerrainSize() / floorCanvas.sizeDelta.x;
+    }
+
+    public float WorldToUI()
+    {
+        return floorCanvas.sizeDelta.x / GetTerrainSize();
     }
 }

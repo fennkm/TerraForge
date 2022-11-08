@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviour
 
     private int mode;
 
-    public TerrainUIPainter terrainUIPainter;
+    public TerrainUIController terrainUIController;
 
     // Start is called before the first frame update
     void Start()
@@ -48,9 +48,9 @@ public class CameraController : MonoBehaviour
             mode = 0;
         
         if (mode == 0)
-            terrainUIPainter.ShowCursor();
+            terrainUIController.ShowCursor();
         else
-            terrainUIPainter.HideCursor();
+            terrainUIController.HideCursor();
 
         if (mode == 0)
         {

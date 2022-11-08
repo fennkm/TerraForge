@@ -14,7 +14,8 @@ public class TerrainController : MonoBehaviour
     public float radius2;
     public Vector2 offset2;
     
-    public float minWaterDepth;
+    public float maxHeight;
+    public float shallowWaterDepth;
     public float maxWaterDepth;
     public Color shallowWaterColour;
     public Color deepWaterColour;
@@ -28,45 +29,39 @@ public class TerrainController : MonoBehaviour
 
     private float density = 1f; // Squares per unit
     private float size = 128f;
+    private int resolution;
     private float[,] heightMap;
 
     public MeshFilter groundMeshFilter;
     public MeshFilter seaMeshFilter;
 
-    private TerrainUIPainter terrainUIPainter;
     private TerrainBuilder terrainBuilder;
 
     void Awake()
     {
-        terrainUIPainter = GetComponent<TerrainUIPainter>();
-
         terrainBuilder = new TerrainBuilder(size, density, groundMeshFilter, seaMeshFilter);
-    }
 
-    void Start()
-    {
-        terrainUIPainter.setTerrainSize(size);
+        resolution = (int) (size * density) + 1;
+
+        heightMap = new float[resolution, resolution];
+
+        for (int i = 0; i < resolution; i++)
+            for (int j = 0; j < resolution; j++)
+                heightMap[i, j] = -maxWaterDepth;
+
+        ApplyHeightMap();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
-        || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
-        {
-            GenerateHeightMap();
-            terrainBuilder.UpdateHeightMap(heightMap);
-        }
+        // if (prevHeight1 != height1 || prevRadius1 != radius1 || prevOffset1 != offset1
+        // || prevHeight2 != height2 || prevRadius2 != radius2 || prevOffset2 != offset2)
+        // {
+        //     GenerateHeightMap();
+        //     terrainBuilder.UpdateHeightMap(heightMap);
+        // }
 
-        if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
-            terrainUIPainter.DecreaseCursorSize();
-        else if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y > 0)
-            terrainUIPainter.IncreaseCursorSize();
-    }
-
-    void FixedUpdate()
-    {
-        terrainUIPainter.PaintCursor();
     }
 
     private void GenerateHeightMap()
@@ -120,7 +115,7 @@ public class TerrainController : MonoBehaviour
         for (int i = 0; i < resolution; i++)
             for (int j = 0;  j < resolution; j++)
             {
-                float depthValue = Mathf.InverseLerp(minWaterDepth, maxWaterDepth, -heightMap[i, j]);
+                float depthValue = Mathf.InverseLerp(shallowWaterDepth, maxWaterDepth, -heightMap[i, j]);
                 waterTex.SetPixel(i, j, Color.Lerp(shallowWaterColour, deepWaterColour, depthValue));
             }
 
@@ -129,4 +124,41 @@ public class TerrainController : MonoBehaviour
         seaMeshFilter.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", waterTex);
         seaMeshFilter.GetComponent<MeshRenderer>().material.SetFloat("_Resolution", resolution);
     }
+
+    public void ApplyHeightMap()
+    {
+        UpdateSeaTex();
+        terrainBuilder.UpdateHeightMap(heightMap);
+    }
+
+    private void UpdateSeaTex()
+    {
+        Texture2D waterTex = new Texture2D(resolution, resolution);
+
+        for (int i = 0; i < resolution; i++)
+            for (int j = 0;  j < resolution; j++)
+            {
+                float depthValue = Mathf.InverseLerp(shallowWaterDepth, maxWaterDepth, -heightMap[i, j]);
+                waterTex.SetPixel(i, j, Color.Lerp(shallowWaterColour, deepWaterColour, depthValue));
+            }
+
+        waterTex.Apply();
+
+        seaMeshFilter.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", waterTex);
+        seaMeshFilter.GetComponent<MeshRenderer>().material.SetFloat("_Resolution", resolution);
+    }
+
+    public void SetHeight(int x, int y, float val)
+    {
+        heightMap[x, y] = Mathf.Clamp(val, -maxWaterDepth, maxHeight);
+    }
+
+    public void AddHeight(int x, int y, float val)
+    {
+        heightMap[x, y] = Mathf.Clamp(heightMap[x, y] + val, -maxWaterDepth, maxHeight);
+    }
+
+    public float GetSize() { return size; }
+    public float GetDensity() { return density; }
+    public int GetResolution() { return resolution; }
 }

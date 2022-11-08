@@ -266,8 +266,8 @@ RectTransform:
   m_Father: {fileID: 1462679785}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -395,10 +395,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 436274849}
+        m_TargetAssemblyTypeName: Tools.LowerTerrainTool, Assembly-CSharp
+        m_MethodName: SetIntensity
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &151801370
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,10 +533,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 436274849}
+        m_TargetAssemblyTypeName: Tools.LowerTerrainTool, Assembly-CSharp
+        m_MethodName: SetSize
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &275914438
 GameObject:
   m_ObjectHideFlags: 0
@@ -902,6 +926,7 @@ GameObject:
   - component: {fileID: 436274845}
   - component: {fileID: 436274847}
   - component: {fileID: 436274848}
+  - component: {fileID: 436274849}
   m_Layer: 5
   m_Name: TerrainLowerTool
   m_TagString: Untagged
@@ -1022,6 +1047,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1931061584}
+        m_TargetAssemblyTypeName: ToolController, Assembly-CSharp
+        m_MethodName: SelectTool
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &436274848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1037,6 +1074,24 @@ MonoBehaviour:
   defaultImg: {fileID: 21300000, guid: 8be3a21ac534d0e4f996fbfff112e921, type: 3}
   selectedImg: {fileID: 21300000, guid: be0aa7477f771e74781c4151705b1e58, type: 3}
   toolTip: {fileID: 1973631072}
+--- !u!114 &436274849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436274843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd6f75d49112c8348a8fbe8d662c2de4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minSize: 100
+  maxSize: 2000
+  terrainUIController: {fileID: 1931061583}
+  minIntensity: 4
+  maxIntensity: 15
+  sizeSlider: {fileID: 209313480}
 --- !u!1 &442603854
 GameObject:
   m_ObjectHideFlags: 0
@@ -1693,10 +1748,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1406183934}
+        m_TargetAssemblyTypeName: Tools.RaiseTerrainTool, Assembly-CSharp
+        m_MethodName: SetSize
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &728377328
 GameObject:
   m_ObjectHideFlags: 0
@@ -1954,7 +2021,7 @@ MonoBehaviour:
   zoomFactor: 0.05
   minZoom: 1
   maxZoom: 200
-  terrainUIPainter: {fileID: 1931061583}
+  terrainUIController: {fileID: 1931061583}
 --- !u!1 &977514647
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,7 +2660,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2779,7 +2846,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3123,6 +3190,7 @@ GameObject:
   - component: {fileID: 1406183930}
   - component: {fileID: 1406183932}
   - component: {fileID: 1406183933}
+  - component: {fileID: 1406183934}
   m_Layer: 5
   m_Name: TerrainRaiseTool
   m_TagString: Untagged
@@ -3243,6 +3311,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1931061584}
+        m_TargetAssemblyTypeName: ToolController, Assembly-CSharp
+        m_MethodName: SelectTool
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1406183933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3258,6 +3338,24 @@ MonoBehaviour:
   defaultImg: {fileID: 21300000, guid: bb077cffd62635e41b784656b59332a9, type: 3}
   selectedImg: {fileID: 21300000, guid: c260d1eacc482974aa3f77cab9bece14, type: 3}
   toolTip: {fileID: 58260984}
+--- !u!114 &1406183934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406183928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5f9aa162f0a05c4c96fb5ec631c93f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minSize: 100
+  maxSize: 2000
+  terrainUIController: {fileID: 1931061583}
+  minIntensity: 4
+  maxIntensity: 15
+  sizeSlider: {fileID: 715956278}
 --- !u!1 &1462679784
 GameObject:
   m_ObjectHideFlags: 0
@@ -3380,10 +3478,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1406183934}
+        m_TargetAssemblyTypeName: Tools.RaiseTerrainTool, Assembly-CSharp
+        m_MethodName: SetIntensity
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1538462693
 GameObject:
   m_ObjectHideFlags: 0
@@ -3417,7 +3527,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3743,7 +3853,7 @@ MonoBehaviour:
   menus:
   - {fileID: 321716527}
   - {fileID: 1923110750}
-  terrainUIPainter: {fileID: 1931061583}
+  terrainUIController: {fileID: 1931061583}
 --- !u!1 &1646662757
 GameObject:
   m_ObjectHideFlags: 0
@@ -3951,8 +4061,8 @@ RectTransform:
   m_Father: {fileID: 1774813724}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4266,6 +4376,7 @@ GameObject:
   - component: {fileID: 1931061582}
   - component: {fileID: 1931061581}
   - component: {fileID: 1931061583}
+  - component: {fileID: 1931061584}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -4291,7 +4402,8 @@ MonoBehaviour:
   height2: -20
   radius2: 12
   offset2: {x: 0, y: 0}
-  minWaterDepth: 1
+  maxHeight: 10
+  shallowWaterDepth: 1
   maxWaterDepth: 10
   shallowWaterColour: {r: 0, g: 0.5200001, b: 0.6117647, a: 0.50980395}
   deepWaterColour: {r: 0.14315297, g: 0.27232155, b: 0.6117647, a: 0.94509804}
@@ -4331,9 +4443,21 @@ MonoBehaviour:
   floorCanvas: {fileID: 275914442}
   innerCursor: {fileID: 2067212693}
   outerCursor: {fileID: 1347518356}
-  resizeFactor: 0.1
-  minSize: 60
-  maxSize: 1000
+  terrainController: {fileID: 1931061581}
+--- !u!114 &1931061584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931061580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dba6797d40119984785d9624579dfa8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiController: {fileID: 1620532598}
+  resizeFactor: 0.02
 --- !u!1 &1973631072
 GameObject:
   m_ObjectHideFlags: 0
@@ -4552,8 +4676,8 @@ RectTransform:
   m_Father: {fileID: 2115555312}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
