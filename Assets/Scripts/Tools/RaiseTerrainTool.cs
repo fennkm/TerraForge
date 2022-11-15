@@ -28,7 +28,6 @@ namespace Tools
         public void SetIntensity(float val)
         {
             intensity = minIntensity * Mathf.Pow(maxIntensity / minIntensity, val);
-            Debug.Log(intensity);
         }
 
         public override void SetSize(float val)
