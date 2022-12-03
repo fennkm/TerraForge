@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public ToolButton[] buttons;
-    public GameObject[] menus;
     private int menuOpen;
     private int toolSelected;
 
@@ -66,7 +65,7 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         else if (menuOpen != -1)
             CloseMenu(menuOpen);
 
-        menus[index].SetActive(true);
+        buttons[index].menu.SetActive(true);
         menuOpen = index;
     }
 
@@ -75,14 +74,14 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (menuOpen != index)
             return;
         
-        menus[index].SetActive(false);
+        buttons[index].menu.SetActive(false);
         menuOpen = -1;
     }
 
     private void CloseMenus()
     {
-        foreach (GameObject menu in menus)
-            menu.SetActive(false);
+        foreach (ToolButton button in buttons)
+            button.menu.SetActive(false);
 
         menuOpen = -1;
     }

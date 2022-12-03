@@ -8,6 +8,7 @@ public class ToolButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 {
     public Sprite defaultImg;
     public Sprite selectedImg;
+    public GameObject menu;
     public GameObject toolTip;
     
     private bool hovering;

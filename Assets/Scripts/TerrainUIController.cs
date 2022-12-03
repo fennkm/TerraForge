@@ -12,6 +12,12 @@ public class TerrainUIController : MonoBehaviour
     public RectTransform innerCursor;
     public RectTransform outerCursor;
 
+    public Material terrainMat;
+    public int terrainTypeNum;
+    private float terrainDensity = 8f; // pixels per unit
+    private float[][] terrainMaskVals;
+    private Texture2DArray terrainMasks;
+
     private float terrainSize;
 
     private Vector2 terrainMousePos;
@@ -32,6 +38,8 @@ public class TerrainUIController : MonoBehaviour
     {
         terrainSize = terrainController.GetSize();
         uiCamera.orthographicSize = terrainSize / 2;
+
+        InitialiseTerrainTex();
     }
 
     void Update()
@@ -41,6 +49,23 @@ public class TerrainUIController : MonoBehaviour
     void FixedUpdate()
     {
         PaintCursor();
+    }
+
+    private void InitialiseTerrainTex()
+    {
+        int terrainResolution = (int) (terrainController.GetSize() * terrainDensity);
+
+        terrainMasks = new Texture2DArray(terrainResolution, terrainResolution,
+            terrainTypeNum, TextureFormat.RFloat, false, true);
+
+        terrainMaskVals = new float[terrainTypeNum][];
+
+        for (int i = 0; i < terrainTypeNum; i++)
+            terrainMaskVals[i] = new float[terrainMasks.width * terrainMasks.height];
+
+        for (int i = 0; i < terrainMaskVals[0].Length; i++) terrainMaskVals[0][i] = 1f;
+
+        ApplyTerrainTex();
     }
 
     public float GetTerrainSize() { return terrainSize; }
@@ -54,12 +79,7 @@ public class TerrainUIController : MonoBehaviour
     {
         terrainMousePos = GetMouseTerrainPoint().xz();
 
-        if (!CursorActive() ||
-            terrainMousePos == Vector2.zero ||
-            terrainMousePos.x >  terrainSize / 2 ||
-            terrainMousePos.x < -terrainSize / 2 ||
-            terrainMousePos.y >  terrainSize / 2 ||
-            terrainMousePos.y < -terrainSize / 2)
+        if (!CursorActive())
         {
             innerCursor.gameObject.SetActive(false);
             outerCursor.gameObject.SetActive(false);
@@ -75,7 +95,19 @@ public class TerrainUIController : MonoBehaviour
         outerCursor.localPosition = cursorPos;
     }
 
-    public bool CursorActive() { return cursorVisible && terrainFocussed; }
+    public bool CursorActive() { 
+        return 
+            cursorVisible && terrainFocussed &&
+            terrainMousePos != Vector2.zero &&
+            terrainMousePos.x <=  terrainSize / 2 &&
+            terrainMousePos.x >= -terrainSize / 2 &&
+            terrainMousePos.y <=  terrainSize / 2 &&
+            terrainMousePos.y >= -terrainSize / 2 &&
+            Input.mousePosition.x >= 0 &&
+            Input.mousePosition.y >= 0 &&
+            Input.mousePosition.x <= Screen.width &&
+            Input.mousePosition.y <= Screen.height; 
+    }
 
     private Vector3 GetMouseTerrainPoint()
     {
@@ -102,6 +134,38 @@ public class TerrainUIController : MonoBehaviour
             return Vector2.one * -1;
         else
             return (terrainMousePos + (terrainController.GetSize() / 2).xx()) / terrainController.GetDensity();
+    }
+
+    public void PaintTerrain(Vector2 pos, float r, float intensity, int type)
+    {
+        Vector2 texPos = pos * terrainDensity;
+        float texRadius = r * terrainDensity;
+
+        for (int j = Mathf.Max(0, (int) (texPos.y - texRadius)); j < Mathf.Min(terrainMasks.width - 1, texPos.y +  texRadius); j++)
+            for (int i = Mathf.Max(0, (int) (texPos.x - texRadius)); i < Mathf.Min(terrainMasks.width - 1, texPos.x +  texRadius); i++)
+            {
+                float dist = (new Vector2(i, j) - texPos).magnitude;
+
+                if (dist >= -texRadius && dist <= texRadius)
+                {
+                    float val = Mathf.Clamp(intensity * Mathf.Cos((dist * Mathf.PI) / (texRadius * 2)), 0f, 1f);
+
+                    foreach (float[] terrainMaskArr in terrainMaskVals)
+                        terrainMaskArr[j * terrainMasks.height + i] *= 1 - val;
+                    terrainMaskVals[type][j * terrainMasks.height + i] += val;
+                }
+            }
+
+        ApplyTerrainTex();
+    }
+
+    public void ApplyTerrainTex()
+    {
+        for (int i = 0; i < terrainTypeNum; i++)
+            terrainMasks.SetPixelData<float>(terrainMaskVals[i], 0, i);
+
+        terrainMasks.Apply();
+        terrainMat.SetTexture("_TerrainMasks", terrainMasks);
     }
 
     void OnDrawGizmos()
