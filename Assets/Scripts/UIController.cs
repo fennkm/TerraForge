@@ -9,7 +9,7 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private int menuOpen;
     private int toolSelected;
 
-    public TerrainUIController terrainUIController;
+    public TerrainGraphicsController terrainGraphicsController;
 
     // Start is called before the first frame update
     void Start()
@@ -30,12 +30,12 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        terrainUIController.Unfocus();
+        terrainGraphicsController.Unfocus();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        terrainUIController.Focus();
+        terrainGraphicsController.Focus();
     }
 
     public void ClickTool(int index)

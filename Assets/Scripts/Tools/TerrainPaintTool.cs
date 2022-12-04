@@ -21,7 +21,8 @@ namespace Tools
 
         public override void Initialise()
         {
-            SetSize(sizeVal);
+            base.Initialise();
+            sizeSlider.value = sizeVal;
         }
 
         public void SetTerrain(int index)
@@ -46,10 +47,10 @@ namespace Tools
 
         public override void Hold()
         {
-            float radius = GetSize() / 2 * terrainUIController.UIToWorld();
-            Vector2 coords = terrainUIController.GetMouseGridPos();
+            float radius = GetSize() / 2;
+            Vector2 coords = terrainGraphicsController.GetCursorPos(false);
 
-            terrainUIController.PaintTerrain(coords, radius, intensity, terrain);
+            terrainGraphicsController.PaintTerrain(coords, radius, intensity, terrain);
         }
     }
 }

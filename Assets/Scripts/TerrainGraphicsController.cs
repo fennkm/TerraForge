@@ -4,13 +4,9 @@ using UnityEngine;
 
 using VectorSwizzling;
 
-public class TerrainUIController : MonoBehaviour
+public class TerrainGraphicsController : MonoBehaviour
 {
     public Camera mainCamera;
-    public Camera uiCamera;
-    public RectTransform floorCanvas;
-    public RectTransform innerCursor;
-    public RectTransform outerCursor;
 
     public Material terrainMat;
     public int terrainTypeNum;
@@ -20,7 +16,7 @@ public class TerrainUIController : MonoBehaviour
 
     private float terrainSize;
 
-    private Vector2 terrainMousePos;
+    private Vector2 normalisedCursorPos;
     private Vector2 cursorPos;
 
     private bool cursorVisible = true;
@@ -37,7 +33,6 @@ public class TerrainUIController : MonoBehaviour
     void Start()
     {
         terrainSize = terrainController.GetSize();
-        uiCamera.orthographicSize = terrainSize / 2;
 
         InitialiseTerrainTex();
     }
@@ -70,46 +65,55 @@ public class TerrainUIController : MonoBehaviour
 
     public float GetTerrainSize() { return terrainSize; }
 
-    public void SetCursorSize(float val)
+    public void InitialiseCursor(float scale, float minScale)
     {
-        outerCursor.sizeDelta = val.xx0();
+        terrainMat.SetFloat("_InnerCursorScale", minScale * .5f / terrainController.GetSize());
+        terrainMat.SetFloat("_OuterCursorScale", scale / terrainController.GetSize());
+    }
+
+    public void SetCursorSize(float scale)
+    {
+        terrainMat.SetFloat("_OuterCursorScale", scale / terrainController.GetSize());
     }
 
     private void PaintCursor()
     {
-        terrainMousePos = GetMouseTerrainPoint().xz();
+        UpdateCursorPos();
 
         if (!CursorActive())
         {
-            innerCursor.gameObject.SetActive(false);
-            outerCursor.gameObject.SetActive(false);
+            terrainMat.SetFloat("_PaintCursor", 0);
             return;
         }
-        
-        innerCursor.gameObject.SetActive(true);
-        outerCursor.gameObject.SetActive(true);
 
-        cursorPos = terrainMousePos * (floorCanvas.sizeDelta.x / terrainSize);
+        terrainMat.SetFloat("_PaintCursor", 1);
 
-        innerCursor.localPosition = cursorPos;
-        outerCursor.localPosition = cursorPos;
+        terrainMat.SetFloat("_CursorOffsetX", normalisedCursorPos.x);
+        terrainMat.SetFloat("_CursorOffsetY", normalisedCursorPos.y);
     }
 
     public bool CursorActive() { 
         return 
             cursorVisible && terrainFocussed &&
-            terrainMousePos != Vector2.zero &&
-            terrainMousePos.x <=  terrainSize / 2 &&
-            terrainMousePos.x >= -terrainSize / 2 &&
-            terrainMousePos.y <=  terrainSize / 2 &&
-            terrainMousePos.y >= -terrainSize / 2 &&
+            normalisedCursorPos.x <= 1 &&
+            normalisedCursorPos.x >= 0 &&
+            normalisedCursorPos.y <= 1 &&
+            normalisedCursorPos.y >= 0 &&
             Input.mousePosition.x >= 0 &&
             Input.mousePosition.y >= 0 &&
             Input.mousePosition.x <= Screen.width &&
             Input.mousePosition.y <= Screen.height; 
     }
 
-    private Vector3 GetMouseTerrainPoint()
+    private Vector2 NormaliseCoords(Vector2 pos)
+    {
+        if (pos == Vector2.zero)
+            return Vector2.one * -1;
+        else
+            return pos / terrainController.GetSize() + .5f.xx();
+    }
+
+    private void UpdateCursorPos()
     {
         RaycastHit hit;
 
@@ -123,22 +127,22 @@ public class TerrainUIController : MonoBehaviour
                 out hit,
                 Mathf.Infinity,
                 1 << 3))
-            return hit.point;
+            cursorPos =  hit.point.xz();
         else
-            return Vector3.zero;
+            cursorPos =  Vector2.zero;
+
+        normalisedCursorPos = NormaliseCoords(cursorPos);
     }
 
-    public Vector2 GetMouseGridPos()
+    public Vector2 GetCursorPos(bool normalised)
     {
-        if (terrainMousePos == Vector2.zero)
-            return Vector2.one * -1;
-        else
-            return (terrainMousePos + (terrainController.GetSize() / 2).xx()) / terrainController.GetDensity();
+        return (normalised ? normalisedCursorPos : cursorPos);
     }
 
     public void PaintTerrain(Vector2 pos, float r, float intensity, int type)
     {
-        Vector2 texPos = pos * terrainDensity;
+        Debug.Log(pos);
+        Vector2 texPos = (pos + terrainController.GetSize().xx() / 2) * terrainDensity;
         float texRadius = r * terrainDensity;
 
         for (int j = Mathf.Max(0, (int) (texPos.y - texRadius)); j < Mathf.Min(terrainMasks.width - 1, texPos.y +  texRadius); j++)
@@ -186,15 +190,5 @@ public class TerrainUIController : MonoBehaviour
                 1 << 3);
 
         Gizmos.DrawLine(mainCamera.transform.position, hit.point);
-    }
-
-    public float UIToWorld()
-    {
-        return GetTerrainSize() / floorCanvas.sizeDelta.x;
-    }
-
-    public float WorldToUI()
-    {
-        return floorCanvas.sizeDelta.x / GetTerrainSize();
     }
 }

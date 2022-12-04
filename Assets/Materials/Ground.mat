@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Ground
-  m_Shader: {fileID: 4800000, guid: 98d2b4f59de79ab4cafbc9dbcca066a0, type: 3}
+  m_Shader: {fileID: 4800000, guid: d0fd807f4f800f04bbce55cdfd910c87, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -29,7 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _DesertTex:
         m_Texture: {fileID: 2800000, guid: 7bbd828b7639d3d45a986c07ceaaee59, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Scale: {x: 100, y: 100}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
@@ -53,7 +53,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _GrassTex:
         m_Texture: {fileID: 2800000, guid: 4713fd370c6927444a7e069ec0932266, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Scale: {x: 100, y: 100}
+        m_Offset: {x: 0, y: 0}
+    - _InnerCursor:
+        m_Texture: {fileID: 2800000, guid: 6b4d2be4e89776d4f934b1f509932f0e, type: 3}
+        m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
@@ -67,6 +71,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _OuterCursor:
+        m_Texture: {fileID: 2800000, guid: 1262b42b0301499469f3391665103b14, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -77,7 +85,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _SnowTex:
         m_Texture: {fileID: 2800000, guid: c09c5ce2a1788f640b7f44e1c6a05576, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Scale: {x: 100, y: 100}
         m_Offset: {x: 0, y: 0}
     - _TerrainMap:
         m_Texture: {fileID: 0}
@@ -87,17 +95,29 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _UILayer:
+        m_Texture: {fileID: 8400000, guid: 6709d7b002665634ea8285e8f727c25b, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
+    - _CursorOffsetX: 0.6706123
+    - _CursorOffsetY: 0.710992
+    - _CursorScale: 0.11765622
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _InnerCursorScale: 0.00390625
+    - _InnerCursorSize: 0.015
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OuterCursorScale: 0.02265625
+    - _OuterCursorSize: 0.03
+    - _PaintCursor: 0
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

@@ -7,7 +7,7 @@ using Tools;
 public class ToolController : MonoBehaviour
 {
     public UIController uiController;
-    private TerrainUIController terrainUIController;
+    private TerrainGraphicsController terrainGraphicsController;
 
     private Tool[] toolList;
     private Tool selectedTool;
@@ -24,14 +24,15 @@ public class ToolController : MonoBehaviour
             toolList[i] = uiController.buttons[i].GetComponent<Tool>();
 
         selectedTool = toolList[uiController.GetToolIndex()];
+        selectedTool.Initialise();
 
-        terrainUIController = uiController.terrainUIController;
+        terrainGraphicsController = uiController.terrainGraphicsController;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (terrainUIController.CursorActive())
+        if (terrainGraphicsController.CursorActive())
         {
             if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y < 0)
                 ModifyCursorSize(-1);

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using VectorSwizzling;
+
 namespace Tools
 {
     public class RaiseTerrainTool : Tool
@@ -17,12 +19,13 @@ namespace Tools
         {
             SetSize(.1f);
             SetIntensity(.1f);
-            terrainController = terrainUIController.terrainController;
+            terrainController = terrainGraphicsController.terrainController;
         }
 
         public override void Initialise()
         {
-            SetSize(sizeVal);
+            base.Initialise();
+            sizeSlider.value = sizeVal;
         }
 
         public void SetIntensity(float val)
@@ -45,8 +48,9 @@ namespace Tools
             float density = terrainController.GetDensity();
             int resolution = terrainController.GetResolution();
 
-            float diameter = GetSize() * terrainUIController.UIToWorld();
-            Vector2 coords = terrainUIController.GetMouseGridPos();
+            float diameter = GetSize() * density;
+            Vector2 coords = 
+                (terrainGraphicsController.GetCursorPos(false) + terrainController.GetSize().xx() / 2) * density;
 
             for (int i = 0; i < resolution; i++)
                 for (int j = 0; j < resolution; j++)
