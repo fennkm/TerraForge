@@ -45,24 +45,10 @@ namespace Tools
 
         public override void Hold()
         {
-            float density = terrainController.GetDensity();
-            int resolution = terrainController.GetResolution();
+            float radius = GetSize() / 2f;
+            Vector2 coords = terrainGraphicsController.GetCursorPos();
 
-            float diameter = GetSize() * density;
-            Vector2 coords = 
-                (terrainGraphicsController.GetCursorPos(false) + terrainController.GetSize().xx() / 2) * density;
-
-            for (int i = 0; i < resolution; i++)
-                for (int j = 0; j < resolution; j++)
-                {
-                    float dist = (new Vector2(i, j) - coords).magnitude;
-                    float val = (dist / (diameter * density)) * Mathf.PI;
-
-                    if (val >= -Mathf.PI / 2 && val <= Mathf.PI / 2)
-                        terrainController.AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
-                }
-
-            terrainController.ApplyHeightMap();
+            terrainController.RaiseArea(coords, radius, intensity);
         }
     }
 }

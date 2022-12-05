@@ -47,10 +47,10 @@ namespace Tools
 
         public override void Hold()
         {
-            float radius = GetSize() / 2;
-            Vector2 coords = terrainGraphicsController.GetCursorPos(false);
+            float radius = GetSize() / 2f;
+            Vector2 pos = terrainGraphicsController.GetCursorPos();
 
-            terrainGraphicsController.PaintTerrain(coords, radius, intensity, terrain);
+            terrainGraphicsController.PaintTerrain(pos, radius, intensity, terrain);
         }
     }
 }

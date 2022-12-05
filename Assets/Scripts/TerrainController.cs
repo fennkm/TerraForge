@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VectorSwizzling;
 
 using TerrainMesh;
 
@@ -71,6 +72,29 @@ public class TerrainController : MonoBehaviour
     {
         if (x > 0 && x < resolution - 1 && y > 0 && y < resolution - 1)
             heightMap[x, y] = Mathf.Clamp(heightMap[x, y] + val, -maxWaterDepth, maxHeight);
+    }
+
+    public Vector2 WorldToMeshCoord(Vector2 coord)
+    {
+        return (coord + GetSize().xx() / 2f) * density;
+    }
+
+    public void RaiseArea(Vector2 pos, float radius, float intensity)
+    {
+        Vector2 meshPos = WorldToMeshCoord(pos);
+        float meshRadius = radius * density;
+
+        for (int i = Mathf.Max(0, (int) (meshPos.x - meshRadius)); i < Mathf.Min(resolution, meshPos.x + meshRadius); i++)
+            for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
+            {
+                float dist = (new Vector2(i, j) - meshPos).magnitude;
+                float val = (dist / (meshRadius * 2f)) * Mathf.PI;
+
+                if (val >= -Mathf.PI / 2 && val <= Mathf.PI / 2)
+                    AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
+            }
+
+        ApplyHeightMap();
     }
 
     public float GetSize() { return size; }
