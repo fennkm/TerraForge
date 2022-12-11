@@ -1,0 +1,275 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GenerateSeaMesh
+
+uint resolution;
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+// Contains ground verts as .xyz
+RWStructuredBuffer<float3> groundVerts;
+RWStructuredBuffer<float3> seaVerts;
+RWStructuredBuffer<int> seaTris;
+
+void AddVert(float3 pos, uint index, uint3 id)
+{
+    seaVerts[(id.x * (resolution - 1) + id.y) * 6 + index] = pos;
+}
+
+void AddTriangle(int vertIndex, uint index, uint3 id)
+{
+    seaTris[(id.x * (resolution - 1) + id.y) * 9 + index] = vertIndex;
+}
+
+float InvLerp(float from, float to, float val)
+{
+    return (val - from) / (from - to);
+}
+
+[numthreads(16, 16, 1)]
+void GenerateSeaMesh (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x > resolution - 2 || id.y > resolution - 2)
+        return;
+
+    float3 p0 = groundVerts[id.x * resolution + id.y];
+    float3 p1 = groundVerts[(id.x + 1) * resolution + id.y];
+    float3 p2 = groundVerts[id.x * resolution + id.y + 1];
+    float3 p3 = groundVerts[(id.x + 1) * resolution + id.y + 1];
+
+    float val0 = p0.y;
+    float val1 = p1.y;
+    float val2 = p2.y;
+    float val3 = p3.y;
+
+    float3 v0 = float3(p0.x, 0, p0.z);
+    float3 v1 = float3(p1.x, 0, p1.z);
+    float3 v2 = float3(p2.x, 0, p2.z);
+    float3 v3 = float3(p3.x, 0, p3.z);
+
+    float vertSep = v0.x - v3.x;
+
+    float3 v01 = float3(v0.x + vertSep * InvLerp(val0, val1, 0), 0, v0.z);
+    float3 v02 = float3(v0.x, 0, v0.z + vertSep * InvLerp(val0, val2, 0));
+    float3 v13 = float3(v3.x, 0, v3.z - vertSep * InvLerp(val3, val1, 0));
+    float3 v23 = float3(v3.x - vertSep * InvLerp(val3, val2, 0), 0, v3.z);
+
+    uint type =
+        (val0 < 0 ? 1 : 0) |
+        (val1 < 0 ? 1 : 0) << 1 |
+        (val2 < 0 ? 1 : 0) << 2 |
+        (val3 < 0 ? 1 : 0) << 3;
+
+    uint vertIndex = 0;
+    uint triIndex = 0;
+
+    switch (type)
+    {
+        case 1:
+            AddVert(v0, vertIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            break;
+
+        case 2:
+            AddVert(v1, vertIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            break;
+
+        case 4:
+            AddVert(v2, vertIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            break;
+
+        case 8:
+            AddVert(v3, vertIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            break;
+
+        case 3:
+            AddVert(v1, vertIndex++, id);
+            AddVert(v0, vertIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            break;
+
+        case 5:
+            AddVert(v0, vertIndex++, id);
+            AddVert(v2, vertIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            break;
+
+        case 10:
+            AddVert(v3, vertIndex++, id);
+            AddVert(v1, vertIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            break;
+
+        case 12:
+            AddVert(v2, vertIndex++, id);
+            AddVert(v3, vertIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            break;
+
+        case 6:
+            AddVert(v1, vertIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v2, vertIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            AddTriangle(5, triIndex++, id);
+            break;
+        
+        case 9:
+            AddVert(v0, vertIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v3, vertIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            AddTriangle(5, triIndex++, id);
+            break;
+
+        case 7:
+            AddVert(v1, vertIndex++, id);
+            AddVert(v0, vertIndex++, id);
+            AddVert(v2, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            break;
+
+        case 11:
+            AddVert(v3, vertIndex++, id);
+            AddVert(v1, vertIndex++, id);
+            AddVert(v0, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddVert(v23, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            break;
+
+        case 13:
+            AddVert(v0, vertIndex++, id);
+            AddVert(v2, vertIndex++, id);
+            AddVert(v3, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v13, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            break;
+
+        case 14:
+            AddVert(v2, vertIndex++, id);
+            AddVert(v3, vertIndex++, id);
+            AddVert(v1, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v01, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddVert(v02, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            AddTriangle(4, triIndex++, id);
+            break;
+
+        case 15:
+            AddVert(v0, vertIndex++, id);
+            AddVert(v2, vertIndex++, id);
+            AddVert(v3, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(1, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddVert(v1, vertIndex++, id);
+            AddTriangle(0, triIndex++, id);
+            AddTriangle(2, triIndex++, id);
+            AddTriangle(3, triIndex++, id);
+            break;
+
+        default:
+            break;
+    }
+
+    while (vertIndex < 6)
+        AddVert(float3(0, -1, 0), vertIndex++, id);
+
+    while (triIndex < 9)
+        AddTriangle(-1, triIndex++, id);
+}

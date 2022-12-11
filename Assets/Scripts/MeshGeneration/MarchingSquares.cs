@@ -54,46 +54,11 @@ namespace TerrainMesh
 
             int resolution = basePoints.GetLength(0);
 
-            bool[,] filled = new bool[resolution - 1, resolution - 1];
-
-            int s = 2;
-            while (s <= resolution >> 2) s <<= 1;
-
-            for (; s > 1; s >>= 1)
-                for (int i = 0; i <= resolution - 1  - s ; i += s)
-                    for (int j = 0; j <= resolution - 1 - s; j += s)
-                    {
-                        if (filled[i, j])
-                            continue;
-
-                        bool empty = true;
-                        for (int u = 0; u <= s; u++)
-                            for (int v = 0; v <= s; v++)
-                                empty &= heightMap[i + u, j + v] < 0;
-                        
-                        if (empty)
-                        {
-                            Vector3 v0 = basePoints[i, j].x0y();
-                            Vector3 v1 = basePoints[i + s, j].x0y();
-                            Vector3 v2 = basePoints[i, j + s].x0y();
-                            Vector3 v3 = basePoints[i + s, j + s].x0y();
-
-                            AddQuad(v0, v2, v3, v1);
-
-                            for (int u = 0; u < s; u++)
-                                for (int v = 0; v < s; v++)
-                                    filled[i + u, j + v] = true;
-                        }
-                    }
-
             float square = basePoints[1, 1].x - basePoints[0, 0].x;
 
             for (int i = 0; i < resolution - 1; i++)
                 for (int j = 0; j < resolution - 1; j++)
                 {
-                    if (filled[i, j])
-                        continue;
-
                     float val0 = heightMap[i, j];
                     float val1 = heightMap[i + 1, j];
                     float val2 = heightMap[i, j + 1];

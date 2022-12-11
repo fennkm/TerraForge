@@ -57,11 +57,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _NormalTex1:
         m_Texture: {fileID: 2800000, guid: 477d25c56c5e1854f8c8f255a4d2bebf, type: 3}
-        m_Scale: {x: 0.1, y: 0.1}
+        m_Scale: {x: 50, y: 50}
         m_Offset: {x: 0, y: 0}
     - _NormalTex2:
         m_Texture: {fileID: 2800000, guid: 9ceb6c11e716bf34d815ca63300cf97c, type: 3}
-        m_Scale: {x: 0.1, y: 0.1}
+        m_Scale: {x: 50, y: 50}
         m_Offset: {x: 0, y: 0}
     - _NormalTexA:
         m_Texture: {fileID: 2800000, guid: 477d25c56c5e1854f8c8f255a4d2bebf, type: 3}

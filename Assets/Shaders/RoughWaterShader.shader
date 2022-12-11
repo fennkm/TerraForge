@@ -74,24 +74,19 @@ Shader "Custom/RoughWaterShader"
             // GAUSSIAN BLUR SETTINGS {{{
             float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
             float Quality = 3.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
-            float Size = 8.0; // BLUR SIZE (Radius)
+            float Size = 0.0625; // BLUR SIZE (Radius)
             // GAUSSIAN BLUR SETTINGS }}}
 
-            float2 uv = IN.uv_MainTex / _Resolution + fixed2(.5, .5);
-            fixed4 col = tex2D(_MainTex, uv);
+            // float2 uv = IN.uv_MainTex / _Resolution + fixed2(.5, .5);
+            fixed4 col = tex2D(_MainTex, IN.uv_MainTex);
         
-            float radius = Size/_Resolution;
+            float radius = Size;
             
             // Blur calculations
-            for( float d=0.0; d<Pi; d+=Pi/Directions)
-            {
-                for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
-                {
-                    col += tex2D( _MainTex, uv + float2(cos(d), sin(d)) * radius * i);		
-                }
-            }
+            for (float d = 0.0; d < Pi; d += Pi / Directions)
+                for (float i = 1.0 / Quality; i <= 1.0; i += 1.0 / Quality)
+                    col += tex2D( _MainTex, IN.uv_MainTex + float2(cos(d), sin(d)) * radius * i);
             
-            // Output to screen
             col /= Quality * Directions - 15.0;
             
             o.Albedo = col.rgb;

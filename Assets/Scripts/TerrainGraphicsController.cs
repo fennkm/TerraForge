@@ -37,10 +37,6 @@ public class TerrainGraphicsController : MonoBehaviour
 
     void Update()
     {
-    }
-
-    void FixedUpdate()
-    {
         PaintCursor();
     }
 
@@ -80,11 +76,11 @@ public class TerrainGraphicsController : MonoBehaviour
 
         if (!CursorActive())
         {
-            terrainMat.SetFloat("_PaintCursor", 0);
+            terrainMat.SetInt("_PaintCursor", 0);
             return;
         }
 
-        terrainMat.SetFloat("_PaintCursor", 1);
+        terrainMat.SetInt("_PaintCursor", 1);
 
         Vector2 normalisedCursorPos = WorldToNormalisedCoord(GetCursorPos());
 
@@ -92,7 +88,8 @@ public class TerrainGraphicsController : MonoBehaviour
         terrainMat.SetFloat("_CursorOffsetY", normalisedCursorPos.y);
     }
 
-    public bool CursorActive() { 
+    public bool CursorActive() 
+    { 
         Vector2 normalisedCursorPos = WorldToNormalisedCoord(GetCursorPos());
 
         return 

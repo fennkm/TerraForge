@@ -14,23 +14,53 @@ public class TerrainController : MonoBehaviour
     public Color shallowWaterColour;
     public Color deepWaterColour;
 
-    private float density = 1f; // Squares per unit
+    public GameObject groundChunk;
+    public GameObject seaChunk;
+
+    public ComputeShader seaMeshGenerator;
+
+    private float density = 4f; // Squares per unit
     private float size = 128f;
     private int resolution;
+    private int chunkRes;
     private float[,] heightMap;
+    private Texture2D waterTex;
 
-    public MeshFilter groundMeshFilter;
-    public MeshFilter seaMeshFilter;
+    public MeshFilter[,] groundChunkMeshFilters;
+    public MeshFilter[,] seaChunkMeshFilters;
 
     private TerrainBuilder terrainBuilder;
 
     void Awake()
     {
-        terrainBuilder = new TerrainBuilder(size, density, groundMeshFilter, seaMeshFilter);
+        chunkRes = Mathf.CeilToInt((Mathf.Pow((size * density), 2) * 4) / 65535f);
 
-        resolution = (int) (size * density) + 1;
+        groundChunkMeshFilters = new MeshFilter[chunkRes, chunkRes];
+        seaChunkMeshFilters = new MeshFilter[chunkRes, chunkRes];
+
+        float chunkSize = GetSize() / chunkRes;
+
+        for (int i = 0; i < chunkRes; i++)
+            for (int j = 0; j < chunkRes; j++)
+            {
+                Vector2 chunkPos = new Vector2(
+                    (i - (chunkRes - 1) / 2f) * chunkSize,
+                    (j - (chunkRes - 1) / 2f) * chunkSize);
+
+                groundChunkMeshFilters[i, j] = 
+                    Instantiate(groundChunk, chunkPos.x0y(), Quaternion.identity, transform).GetComponent<MeshFilter>();
+
+                seaChunkMeshFilters[i, j] = 
+                    Instantiate(seaChunk, chunkPos.x0y(), Quaternion.identity, transform).GetComponent<MeshFilter>();
+            }
+
+        terrainBuilder = new TerrainBuilder(size, density, groundChunkMeshFilters, seaChunkMeshFilters, maxWaterDepth, seaMeshGenerator);
+
+        resolution = terrainBuilder.GetMeshResolution();
 
         heightMap = new float[resolution, resolution];
+
+        waterTex = new Texture2D(resolution, resolution);
 
         for (int i = 0; i < resolution; i++)
             for (int j = 0; j < resolution; j++)
@@ -39,18 +69,21 @@ public class TerrainController : MonoBehaviour
         ApplyHeightMap();
     }
 
-    public void ApplyHeightMap()
+    public void ApplyHeightMap(int xFrom, int xTo, int yFrom, int yTo)
     {
-        UpdateSeaTex();
-        terrainBuilder.UpdateHeightMap(heightMap);
+        UpdateSeaTex(xFrom, xTo, yFrom, yTo);
+        terrainBuilder.UpdateHeightMap(heightMap, xFrom, xTo, yFrom, yTo);
     }
 
-    private void UpdateSeaTex()
+    public void ApplyHeightMap()
     {
-        Texture2D waterTex = new Texture2D(resolution, resolution);
+        ApplyHeightMap(0, resolution - 1, 0, resolution - 1);
+    }
 
-        for (int i = 0; i < resolution; i++)
-            for (int j = 0;  j < resolution; j++)
+    private void UpdateSeaTex(int xFrom, int xTo, int yFrom, int yTo)
+    {
+        for (int i = xFrom; i <= xTo; i++)
+            for (int j = yFrom;  j <= yTo; j++)
             {
                 float depthValue = Mathf.InverseLerp(shallowWaterDepth, maxWaterDepth, -heightMap[i, j]);
                 waterTex.SetPixel(i, j, Color.Lerp(shallowWaterColour, deepWaterColour, depthValue));
@@ -58,8 +91,8 @@ public class TerrainController : MonoBehaviour
 
         waterTex.Apply();
 
-        seaMeshFilter.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", waterTex);
-        seaMeshFilter.GetComponent<MeshRenderer>().material.SetFloat("_Resolution", resolution);
+        foreach (MeshFilter meshFilter in seaChunkMeshFilters)
+            meshFilter.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", waterTex);
     }
 
     public void SetHeight(int x, int y, float val)
@@ -94,7 +127,11 @@ public class TerrainController : MonoBehaviour
                     AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
             }
 
-        ApplyHeightMap();
+        ApplyHeightMap(
+            Mathf.Max(0, (int) (meshPos.x - meshRadius)),
+            Mathf.Min(resolution - 1, (int) (meshPos.x + meshRadius)),
+            Mathf.Max(0, (int) (meshPos.y - meshRadius)),
+            Mathf.Min(resolution - 1, (int) (meshPos.y + meshRadius)));
     }
 
     public float GetSize() { return size; }
