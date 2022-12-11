@@ -10,8 +10,8 @@ Shader "Custom/TerrainShader"
         _CursorOffsetX ("Cursor Offset X", float) = 0
         _CursorOffsetY ("Cursor Offset Y", float) = 0
         _TerrainMasks ("Terrain Masks", 2DArray) = "texArr" {}
-        _GrassTex ("Grass Texture", 2D) = "tex" {}
         _DesertTex ("Desert Texture", 2D) = "tex" {}
+        _GrassTex ("Grass Texture", 2D) = "tex" {}
         _SnowTex ("Snow Texture", 2D) = "tex" {}
     }
     SubShader
@@ -37,10 +37,10 @@ Shader "Custom/TerrainShader"
         float _CursorOffsetX;
         float _CursorOffsetY;
         
-        sampler2D _GrassTex;
-        float4 _GrassTex_ST;
         sampler2D _DesertTex;
         float4 _DesertTex_ST;
+        sampler2D _GrassTex;
+        float4 _GrassTex_ST;
         sampler2D _SnowTex;
         float4 _SnowTex_ST;
 
@@ -60,11 +60,11 @@ Shader "Custom/TerrainShader"
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             fixed4 col1;
-            col1.rgb = tex2D(_GrassTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _GrassTex)).rgb;
+            col1.rgb = tex2D(_DesertTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _DesertTex)).rgb;
             col1.a = UNITY_SAMPLE_TEX2DARRAY(_TerrainMasks, float3(IN.uv_TerrainMasks.xy, 0)).r;
 
             fixed4 col2;
-            col2.rgb = tex2D(_DesertTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _DesertTex)).rgb;
+            col2.rgb = tex2D(_GrassTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _GrassTex)).rgb;
             col2.a = UNITY_SAMPLE_TEX2DARRAY(_TerrainMasks, float3(IN.uv_TerrainMasks.xy, 1)).r;
 
             fixed4 col3;

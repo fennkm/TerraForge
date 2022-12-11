@@ -19,7 +19,8 @@ public class TerrainController : MonoBehaviour
 
     public ComputeShader seaMeshGenerator;
 
-    private float density = 4f; // Squares per unit
+    private float densityGoal = 4f; // Squares per unit
+    private float actualDensity;
     private float size = 128f;
     private int resolution;
     private int chunkRes;
@@ -33,7 +34,7 @@ public class TerrainController : MonoBehaviour
 
     void Awake()
     {
-        chunkRes = Mathf.CeilToInt((Mathf.Pow((size * density), 2) * 4) / 65535f);
+        chunkRes = Mathf.CeilToInt((Mathf.Pow((size * densityGoal), 2) * 4) / 65535f);
 
         groundChunkMeshFilters = new MeshFilter[chunkRes, chunkRes];
         seaChunkMeshFilters = new MeshFilter[chunkRes, chunkRes];
@@ -54,9 +55,11 @@ public class TerrainController : MonoBehaviour
                     Instantiate(seaChunk, chunkPos.x0y(), Quaternion.identity, transform).GetComponent<MeshFilter>();
             }
 
-        terrainBuilder = new TerrainBuilder(size, density, groundChunkMeshFilters, seaChunkMeshFilters, maxWaterDepth, seaMeshGenerator);
+        terrainBuilder = new TerrainBuilder(size, densityGoal, groundChunkMeshFilters, seaChunkMeshFilters, maxWaterDepth, seaMeshGenerator);
 
         resolution = terrainBuilder.GetMeshResolution();
+
+        actualDensity = (resolution - 1) / size;
 
         heightMap = new float[resolution, resolution];
 
@@ -109,13 +112,13 @@ public class TerrainController : MonoBehaviour
 
     public Vector2 WorldToMeshCoord(Vector2 coord)
     {
-        return (coord + GetSize().xx() / 2f) * density;
+        return (coord + GetSize().xx() / 2f) * actualDensity;
     }
 
     public void RaiseArea(Vector2 pos, float radius, float intensity)
     {
         Vector2 meshPos = WorldToMeshCoord(pos);
-        float meshRadius = radius * density;
+        float meshRadius = radius * actualDensity;
 
         for (int i = Mathf.Max(0, (int) (meshPos.x - meshRadius)); i < Mathf.Min(resolution, meshPos.x + meshRadius); i++)
             for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
@@ -128,13 +131,13 @@ public class TerrainController : MonoBehaviour
             }
 
         ApplyHeightMap(
-            Mathf.Max(0, (int) (meshPos.x - meshRadius)),
-            Mathf.Min(resolution - 1, (int) (meshPos.x + meshRadius)),
-            Mathf.Max(0, (int) (meshPos.y - meshRadius)),
-            Mathf.Min(resolution - 1, (int) (meshPos.y + meshRadius)));
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.x + meshRadius)),
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.y - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.y + meshRadius)));
     }
 
     public float GetSize() { return size; }
-    public float GetDensity() { return density; }
+    public float GetDensity() { return actualDensity; }
     public int GetResolution() { return resolution; }
 }

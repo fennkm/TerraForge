@@ -56,7 +56,7 @@ namespace TerrainMesh
             
             resolution = (int) (density * size) + 1;
 
-            resolution += chunkRes - (resolution - 1) % chunkRes - 1;
+            resolution += (chunkRes - (resolution - 1) % chunkRes) % chunkRes;
 
             heightMap = new float[resolution, resolution];
 
@@ -142,11 +142,11 @@ namespace TerrainMesh
 
         private void UpdateMeshes(int xFrom, int xTo, int yFrom, int yTo)
         {
-            int xChunkFrom = xFrom / chunkVertNum;
-            int xChunkTo = xTo / chunkVertNum;
-            int yChunkFrom = yFrom / chunkVertNum;
-            int yChunkTo = yTo / chunkVertNum;
-
+            int xChunkFrom = Mathf.Max(0, Mathf.CeilToInt(xFrom / (float) (chunkVertNum - 1) - 1));
+            int xChunkTo = Mathf.Min(chunkRes - 1, Mathf.FloorToInt(xTo / (float) (chunkVertNum - 1)));
+            int yChunkFrom = Mathf.Max(0, Mathf.CeilToInt(yFrom / (float) (chunkVertNum - 1) - 1));
+            int yChunkTo = Mathf.Min(chunkRes - 1, Mathf.FloorToInt(yTo / (chunkVertNum - 1)));
+            
             float a = Time.realtimeSinceStartup;
             UpdateGroundMesh(xChunkFrom, xChunkTo, yChunkFrom, yChunkTo);
             float b = Time.realtimeSinceStartup;
@@ -161,6 +161,7 @@ namespace TerrainMesh
         {
             float aTime = 0f;
             float bTime = 0f;
+            float cTime = 0f;
 
             for (int n = xChunkFrom; n <= xChunkTo; n++)
                 for (int m = yChunkFrom; m <= yChunkTo; m++)
@@ -168,12 +169,12 @@ namespace TerrainMesh
                     float a = Time.realtimeSinceStartup;
                     for (int i = 0; i < chunkVertNum; i++)
                         for (int j = 0; j < chunkVertNum; j++)
-                            groundChunkVerts[n, m][i * chunkVertNum + j].y = 
-                                heightMap[n * (chunkVertNum - 1) + i, m * (chunkVertNum - 1) + j];
+                            groundChunkVerts[n, m][i * chunkVertNum + j].y = getHeightInChunk(n, m, i, j);
                     float b = Time.realtimeSinceStartup;
 
                     groundChunkMeshes[n, m].SetVertices(groundChunkVerts[n, m]);
                     groundChunkMeshes[n, m].RecalculateNormals();
+                    groundChunkMeshes[n, m].RecalculateBounds();
 
                     groundChunkMeshColls[n, m].sharedMesh = groundChunkMeshes[n, m];
                     float c = Time.realtimeSinceStartup;
@@ -181,9 +182,169 @@ namespace TerrainMesh
                     aTime += b - a;
                     bTime += c - b;
                 }
+                
+            float s = Time.realtimeSinceStartup;
+            MergeGroundNormals(xChunkFrom, xChunkTo, yChunkFrom, yChunkTo);
+            float t = Time.realtimeSinceStartup;
+            cTime += t - s;
 
             Debug.Log("Updating vertex heights: " + aTime);
             Debug.Log("Updating ground meshes: " + bTime);
+            Debug.Log("Merging ground normals: " + cTime);
+        }
+
+        private void MergeGroundNormals(int xChunkFrom, int xChunkTo, int yChunkFrom, int yChunkTo)
+        {
+            Vector3[,][] xEdgeNormals = new Vector3[xChunkTo - xChunkFrom + 1, yChunkTo - yChunkFrom + 2][];
+            Vector3[,][] yEdgeNormals = new Vector3[xChunkTo - xChunkFrom + 2, yChunkTo - yChunkFrom + 1][];
+
+            for (int n = xChunkFrom; n <= xChunkTo; n++)
+                for (int m = yChunkFrom; m <= yChunkTo + 1; m++)
+                {
+                    xEdgeNormals[n - xChunkFrom, m - yChunkFrom] = new Vector3[chunkVertNum];
+
+                    for (int i = 0; i < chunkVertNum; i++)
+                        xEdgeNormals[n - xChunkFrom, m - yChunkFrom][i] = CalculateVertexNormal(n, m, i, 0);
+                }
+
+            for (int n = xChunkFrom; n <= xChunkTo + 1; n++)
+                for (int m = yChunkFrom; m <= yChunkTo; m++)
+                {
+                    yEdgeNormals[n - xChunkFrom, m - yChunkFrom] = new Vector3[chunkVertNum - 2];
+
+                    for (int j = 0; j < chunkVertNum - 2; j++)
+                        yEdgeNormals[n - xChunkFrom, m - yChunkFrom][j] = CalculateVertexNormal(n, m, 0, j + 1); 
+                }
+
+            for (int n = Mathf.Max(0, xChunkFrom - 1); n <= Mathf.Min(chunkRes - 1, xChunkTo + 1); n++)
+            {
+                for (int m = Mathf.Max(0, yChunkFrom - 1); m <= Mathf.Min(chunkRes - 1, yChunkTo + 1); m++)
+                {
+                    Vector3[] chunkNormals = groundChunkMeshes[n, m].normals;
+
+                    if (m >= yChunkFrom && n >= xChunkFrom && n <= xChunkTo)
+                        for (int i = 0; i < chunkVertNum; i++)
+                            chunkNormals[i * chunkVertNum] = xEdgeNormals[n - xChunkFrom, m - yChunkFrom][i];
+                    
+                    if (m <= yChunkTo && n >= xChunkFrom && n <= xChunkTo)
+                        for (int i = 0; i < chunkVertNum; i++)
+                            chunkNormals[i * chunkVertNum + chunkVertNum - 1] = xEdgeNormals[n - xChunkFrom, m - yChunkFrom + 1][i];
+
+                    if (n >= xChunkFrom && m >= yChunkFrom && m <= yChunkTo)
+                        for (int j = 0; j < chunkVertNum - 2; j++)
+                            chunkNormals[j + 1] = yEdgeNormals[n - xChunkFrom, m - yChunkFrom][j];
+                        
+                    if (n <= xChunkTo && m >= yChunkFrom && m <= yChunkTo)
+                        for (int j = 0; j < chunkVertNum - 2; j++)
+                            chunkNormals[(chunkVertNum - 1) * chunkVertNum + j + 1] = yEdgeNormals[n - xChunkFrom + 1, m - yChunkFrom][j];
+
+                    groundChunkMeshes[n, m].SetNormals(chunkNormals);
+                }
+            }
+        }
+
+        private Vector3 CalculateVertexNormal(int chunkX, int chunkY, int vertX, int vertY)
+        {
+            Vector3[,] triangles = new Vector3[6, 3];
+            Vector2Int generalCoords = new Vector2Int(chunkX * (chunkVertNum - 1) + vertX, chunkY * (chunkVertNum - 1) + vertY);
+
+
+            if (generalCoords.x < resolution - 1 && generalCoords.y < resolution -1)
+            {
+                triangles[0, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+                triangles[0, 1] = getVertInChunk(chunkX, chunkY, vertX, vertY + 1);
+                triangles[0, 2] = getVertInChunk(chunkX, chunkY, vertX + 1, vertY);
+            }
+            
+
+            if (generalCoords.x < resolution - 1 && generalCoords.y > 0)
+            {
+                triangles[1, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+                triangles[2, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+
+                triangles[1, 1] = getVertInChunk(chunkX, chunkY, vertX + 1, vertY);
+
+                triangles[1, 2] = getVertInChunk(chunkX, chunkY, vertX + 1, vertY - 1);
+                triangles[2, 1] = triangles[1, 2];
+
+                triangles[2, 2] = getVertInChunk(chunkX, chunkY, vertX, vertY - 1);
+            }
+
+            if (generalCoords.x > 0 && generalCoords.y > 0)
+            {
+                triangles[3, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+                triangles[3, 1] = getVertInChunk(chunkX, chunkY, vertX, vertY - 1);
+                triangles[3, 2] = getVertInChunk(chunkX, chunkY, vertX - 1, vertY);
+            }
+
+            if (generalCoords.x > 0 && generalCoords.y < resolution -1)
+            {
+                triangles[4, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+                triangles[5, 0] = getVertInChunk(chunkX, chunkY, vertX, vertY);
+
+                triangles[4, 1] = getVertInChunk(chunkX, chunkY, vertX - 1, vertY);
+
+                triangles[4, 2] = getVertInChunk(chunkX, chunkY, vertX - 1, vertY + 1);
+                triangles[5, 1] = triangles[4, 2];
+
+                triangles[5, 2] = getVertInChunk(chunkX, chunkY, vertX, vertY + 1);
+            }
+
+            Vector3 normal = Vector3.zero;
+
+            for (int k = 0; k < 6; k++)
+                normal += Vector3.Cross(triangles[k, 1] - triangles[k, 0], triangles[k, 2] - triangles[k, 0]);
+
+            return normal.normalized;
+        }
+
+        private int[] cleanChunkCoords(int[] coords)
+        {
+            // Debug.Log("Dirty: " + coords[0] + ", " + coords[1] + ", " + coords[2] + ", " + coords[3]);
+
+            Vector2Int generalCoords = new Vector2Int(
+                coords[0] * (chunkVertNum - 1) + coords[2], 
+                coords[1] * (chunkVertNum - 1) + coords[3]);
+
+            // Debug.Log("General: " + generalCoords.x + ", " + generalCoords.y);
+
+            if (generalCoords.x < 0 || 
+                generalCoords.x > resolution - 1 ||
+                generalCoords.y < 0 || 
+                generalCoords.y > resolution - 1)
+                throw new System.IndexOutOfRangeException(
+                    "Chunk coordinates [ChunkX: " + coords[0] + 
+                    ", ChunkY: " + coords[1] + 
+                    ", VertX: " + coords[2] +
+                    ", VertY: " + coords[3] + 
+                    "] are invalid!");
+
+            int[] cleanCoords = new int[] {
+                (generalCoords.x == 0 ? 0 : (generalCoords.x - 1) / (chunkVertNum - 1)), 
+                (generalCoords.y == 0 ? 0 : (generalCoords.y - 1) / (chunkVertNum - 1)), 
+                (generalCoords.x == 0 ? 0 : (generalCoords.x - 1) % (chunkVertNum - 1) + 1), 
+                (generalCoords.y == 0 ? 0 : (generalCoords.y - 1) % (chunkVertNum - 1) + 1) };
+            
+            // Debug.Log("Clean: " + cleanCoords[0] + ", " + cleanCoords[1] + ", " + cleanCoords[2] + ", " + cleanCoords[3]);
+
+            return cleanCoords;
+        }
+
+        private int[] cleanChunkCoords(int chunkX, int chunkY, int vertX, int vertY)
+        {
+            return cleanChunkCoords(new int[] { chunkX, chunkY, vertX, vertY });
+        }
+
+        private Vector3 getVertInChunk(int chunkX, int chunkY, int vertX, int vertY)
+        {
+            int[] coords = cleanChunkCoords(chunkX, chunkY, vertX, vertY);
+
+            return groundChunkVerts[coords[0], coords[1]][coords[2] * chunkVertNum + coords[3]] + chunkPositions[coords[0], coords[1]].x0y();
+        }
+
+        private float getHeightInChunk(int chunkX, int chunkY, int vertX, int vertY)
+        {
+            return heightMap[chunkX * (chunkVertNum - 1) + vertX, chunkY * (chunkVertNum - 1) + vertY];
         }
 
         private void UpdateSeaMesh(int xChunkFrom, int xChunkTo, int yChunkFrom, int yChunkTo)
@@ -200,7 +361,7 @@ namespace TerrainMesh
                     float a = Time.realtimeSinceStartup;
                     for (int i = 0; i < chunkVertNum; i++)
                         for (int j = 0; j < chunkVertNum; j++)
-                            groundPoints[n, m][i, j].y = heightMap[n * (chunkVertNum - 1) + i, m * (chunkVertNum - 1) + j];
+                            groundPoints[n, m][i, j].y = getHeightInChunk(n, m, i, j);
                             
                     GetSeaMeshData(n, m, ref verts, ref tris);
 

@@ -104,14 +104,6 @@ public class TerrainGraphicsController : MonoBehaviour
             Input.mousePosition.y <= Screen.height; 
     }
 
-    private Vector2 NormaliseCoords(Vector2 pos)
-    {
-        if (pos == Vector2.zero)
-            return Vector2.one * -1;
-        else
-            return pos / terrainController.GetSize() + .5f.xx();
-    }
-
     private void UpdateCursorPos()
     {
         RaycastHit hit;
@@ -128,7 +120,7 @@ public class TerrainGraphicsController : MonoBehaviour
                 1 << 3))
             cursorPos =  hit.point.xz();
         else
-            cursorPos =  Vector2.zero;
+            cursorPos =  Vector2.positiveInfinity;
     }
 
     public Vector2 GetCursorPos()

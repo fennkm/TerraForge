@@ -114,8 +114,13 @@ public class CameraController : MonoBehaviour
             if (transform.position.x > groundPoint.x)
                 viewAngle = 360f - viewAngle;
 
-            Vector2 delta = Input.mousePosition.xy() - mouseDownPos[2];
-            transform.position = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y() * panSpeed;
+            Vector2 delta = (Input.mousePosition.xy() - mouseDownPos[2]) / Screen.height;
+                
+            groundPoint = GetGroundPoint();
+            Vector3 groundToCam = transform.position - groundPoint;
+
+            transform.position = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y()
+                * panSpeed * groundToCam.magnitude / minZoom;
 
             groundPoint = GetGroundPoint();
 
