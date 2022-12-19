@@ -117,6 +117,7 @@ public class TerrainController : MonoBehaviour
 
     public void RaiseArea(Vector2 pos, float radius, float intensity)
     {
+        float s = Time.realtimeSinceStartup;
         Vector2 meshPos = WorldToMeshCoord(pos);
         float meshRadius = radius * actualDensity;
 
@@ -129,6 +130,10 @@ public class TerrainController : MonoBehaviour
                 if (val >= -Mathf.PI / 2 && val <= Mathf.PI / 2)
                     AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
             }
+        
+        float t = Time.realtimeSinceStartup;
+
+        Debug.Log("Modifying height map: " + (t - s));
 
         ApplyHeightMap(
             Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),

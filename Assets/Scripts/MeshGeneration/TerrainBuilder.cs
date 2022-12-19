@@ -351,19 +351,23 @@ namespace TerrainMesh
         {
             float aTime = 0f;
             float bTime = 0f;
+            float cTime = 0f;
 
             for (int n = xChunkFrom; n <= xChunkTo; n++)
                 for (int m = yChunkFrom; m <= yChunkTo; m++)
                 {
-                    Vector3[] verts = new Vector3[(chunkVertNum - 1) * (chunkVertNum - 1) * 6];
-                    int[] tris = new int[(chunkVertNum - 1) * (chunkVertNum - 1) * 9];
                     
                     float a = Time.realtimeSinceStartup;
+                    Vector3[] verts = new Vector3[(chunkVertNum - 1) * (chunkVertNum - 1) * 6];
+                    int[] tris = new int[(chunkVertNum - 1) * (chunkVertNum - 1) * 9];
+
                     for (int i = 0; i < chunkVertNum; i++)
                         for (int j = 0; j < chunkVertNum; j++)
                             groundPoints[n, m][i, j].y = getHeightInChunk(n, m, i, j);
                             
                     GetSeaMeshData(n, m, ref verts, ref tris);
+                    
+                    float b = Time.realtimeSinceStartup;
 
                     List<Vector3> vertexList = new List<Vector3>();
                     List<int> triangleList = new List<int>();
@@ -391,7 +395,7 @@ namespace TerrainMesh
                             }
                         }
                         
-                    float b = Time.realtimeSinceStartup;
+                    float c = Time.realtimeSinceStartup;
 
                     // This is the most time consuming bit!
                     seaChunkMeshes[n, m].Clear(); // VERY IMPORTANT IF CHANGING NUMBER OF VERTICES
@@ -399,13 +403,15 @@ namespace TerrainMesh
                     seaChunkMeshes[n, m].SetUVs(0, vertexList.Select(e => (e.xz() + chunkPositions[n, m]) / size + .5f.xx()).ToArray());
                     seaChunkMeshes[n, m].SetTriangles(triangleList, 0);
                     
-                    float c = Time.realtimeSinceStartup;
+                    float d = Time.realtimeSinceStartup;
 
                     aTime += b - a;
                     bTime += c - b;
+                    cTime += c - b;
                 }
             Debug.Log("Shader running time: " + aTime);
-            Debug.Log("Updating sea meshes: " + bTime);
+            Debug.Log("Formatting shader data: " + bTime);
+            Debug.Log("Updating sea meshes: " + cTime);
         }
 
         private void GetSeaMeshData(int chunkX, int chunkY, ref Vector3[] verts, ref int[] tris)
