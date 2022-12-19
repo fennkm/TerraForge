@@ -21,6 +21,7 @@ public class CameraController : MonoBehaviour
 
     private Vector2[] mouseDownPos = new Vector2[3];
     private Vector3 panStartPos;
+    private float groundToCamDist;
     private Vector3 orbitStartPos;
     private float orbitStartPitch;
 
@@ -66,6 +67,8 @@ public class CameraController : MonoBehaviour
             {
                 mouseDownPos[2] = Input.mousePosition;
                 panStartPos = transform.position;
+                groundPoint = GetGroundPoint();
+                groundToCamDist = (transform.position - groundPoint).magnitude;
                 mode = 2;
             }
         }
@@ -115,12 +118,9 @@ public class CameraController : MonoBehaviour
                 viewAngle = 360f - viewAngle;
 
             Vector2 delta = (Input.mousePosition.xy() - mouseDownPos[2]) / Screen.height;
-                
-            groundPoint = GetGroundPoint();
-            Vector3 groundToCam = transform.position - groundPoint;
 
             transform.position = panStartPos - Quaternion.Euler(0f, viewAngle, 0f) * delta.x0y()
-                * panSpeed * groundToCam.magnitude / minZoom;
+                * panSpeed * groundToCamDist / minZoom;
 
             groundPoint = GetGroundPoint();
 
