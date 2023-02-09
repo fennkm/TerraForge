@@ -153,8 +153,8 @@ namespace TerrainMesh
             UpdateSeaMesh(xChunkFrom, xChunkTo, yChunkFrom, yChunkTo);
             float c = Time.realtimeSinceStartup;
 
-            Debug.Log("Ground mesh generation total: " + (b - a));
-            Debug.Log("Sea mesh generation total: " + (c - b));
+            // Debug.Log("Ground mesh generation total: " + (b - a));
+            // Debug.Log("Sea mesh generation total: " + (c - b));
         }
 
         private void UpdateGroundMesh(int xChunkFrom, int xChunkTo, int yChunkFrom, int yChunkTo)
@@ -188,9 +188,9 @@ namespace TerrainMesh
             float t = Time.realtimeSinceStartup;
             cTime += t - s;
 
-            Debug.Log("Updating vertex heights: " + aTime);
-            Debug.Log("Updating ground meshes: " + bTime);
-            Debug.Log("Merging ground normals: " + cTime);
+            // Debug.Log("Updating vertex heights: " + aTime);
+            // Debug.Log("Updating ground meshes: " + bTime);
+            // Debug.Log("Merging ground normals: " + cTime);
         }
 
         private void MergeGroundNormals(int xChunkFrom, int xChunkTo, int yChunkFrom, int yChunkTo)
@@ -409,9 +409,9 @@ namespace TerrainMesh
                     bTime += c - b;
                     cTime += c - b;
                 }
-            Debug.Log("Shader running time: " + aTime);
-            Debug.Log("Formatting shader data: " + bTime);
-            Debug.Log("Updating sea meshes: " + cTime);
+            // Debug.Log("Shader running time: " + aTime);
+            // Debug.Log("Formatting shader data: " + bTime);
+            // Debug.Log("Updating sea meshes: " + cTime);
         }
 
         private void GetSeaMeshData(int chunkX, int chunkY, ref Vector3[] verts, ref int[] tris)

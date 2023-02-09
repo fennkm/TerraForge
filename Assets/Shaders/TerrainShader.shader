@@ -7,8 +7,10 @@ Shader "Custom/TerrainShader"
         _OuterCursor ("Outer Cursor", 2D) = "tex" {}
         _InnerCursorScale ("Inner Cursor Scale", float) = 1
         _OuterCursorScale ("Outer Cursor Scale", float) = 1
-        _CursorOffsetX ("Cursor Offset X", float) = 0
-        _CursorOffsetY ("Cursor Offset Y", float) = 0
+        _OuterCursorOffsetX ("Outer Cursor Offset X", float) = 0
+        _OuterCursorOffsetY ("Outer Cursor Offset Y", float) = 0
+        _InnerCursorOffsetX ("Inner Cursor Offset X", float) = 0
+        _InnerCursorOffsetY ("Inner Cursor Offset Y", float) = 0
         _TerrainMasks ("Terrain Masks", 2DArray) = "texArr" {}
         _DesertTex ("Desert Texture", 2D) = "tex" {}
         _GrassTex ("Grass Texture", 2D) = "tex" {}
@@ -34,8 +36,10 @@ Shader "Custom/TerrainShader"
         sampler2D _OuterCursor;
         float _InnerCursorScale;
         float _OuterCursorScale;
-        float _CursorOffsetX;
-        float _CursorOffsetY;
+        float _OuterCursorOffsetX;
+        float _OuterCursorOffsetY;
+        float _InnerCursorOffsetX;
+        float _InnerCursorOffsetY;
         
         sampler2D _DesertTex;
         float4 _DesertTex_ST;
@@ -82,10 +86,10 @@ Shader "Custom/TerrainShader"
                 fixed4 innerCursorCol;
 
                 float2 outerCursorUV = float2(0.5, 0.5) +
-                    (IN.uv_TerrainMasks - float2(_CursorOffsetX, _CursorOffsetY)) / _OuterCursorScale;
+                    (IN.uv_TerrainMasks - float2(_OuterCursorOffsetX, _OuterCursorOffsetY)) / _OuterCursorScale;
 
                 float2 innerCursorUV = float2(0.5, 0.5) + 
-                    (IN.uv_TerrainMasks - float2(_CursorOffsetX, _CursorOffsetY)) / _InnerCursorScale;
+                    (IN.uv_TerrainMasks - float2(_InnerCursorOffsetX, _InnerCursorOffsetY)) / _InnerCursorScale;
 
                 outerCursorCol = tex2D(_OuterCursor, outerCursorUV);
                 innerCursorCol = tex2D(_InnerCursor, innerCursorUV);

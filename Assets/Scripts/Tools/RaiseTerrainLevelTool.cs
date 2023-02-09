@@ -7,7 +7,7 @@ using VectorSwizzling;
 
 namespace Tools
 {
-    public class RaiseTerrainTool : Tool
+    public class RaiseTerrainLevelTool : Tool
     {
         public float minIntensity;
         public float maxIntensity;
@@ -15,10 +15,12 @@ namespace Tools
         private TerrainController terrainController;
         public Slider sizeSlider;
 
+        private float heightVal;
+
         void Start()
         {
-            SetSize(.1f);
-            SetIntensity(.1f);
+            SetSize(.5f);
+            SetIntensity(.6f);
             terrainController = terrainGraphicsController.terrainController;
         }
 
@@ -30,7 +32,7 @@ namespace Tools
 
         public void SetIntensity(float val)
         {
-            intensity = minIntensity * Mathf.Pow(maxIntensity / minIntensity, val);
+            intensity = minIntensity + (maxIntensity - minIntensity) * val;
         }
 
         public override void SetSize(float val)
@@ -41,6 +43,9 @@ namespace Tools
 
         public override void Click()
         {
+            Vector3 cursorPos = terrainGraphicsController.GetCursorPos();
+            heightVal = cursorPos.y;
+            terrainGraphicsController.SetStickyCursor(cursorPos);
         }
 
         public override void Hold()
@@ -48,7 +53,12 @@ namespace Tools
             float radius = GetSize() / 2f;
             Vector3 coords = terrainGraphicsController.GetCursorPos();
 
-            terrainController.RaiseArea(coords, radius, intensity);
+            terrainController.SetAreaToHeight(coords, radius, intensity, heightVal, false, true);
+        }
+
+        public override void Release()
+        {
+            terrainGraphicsController.ClearStickyCursor();
         }
     }
 }

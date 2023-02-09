@@ -7,7 +7,7 @@ using VectorSwizzling;
 
 namespace Tools
 {
-    public class RaiseTerrainTool : Tool
+    public class SmoothTerrainTool : Tool
     {
         public float minIntensity;
         public float maxIntensity;
@@ -17,8 +17,8 @@ namespace Tools
 
         void Start()
         {
-            SetSize(.1f);
-            SetIntensity(.1f);
+            SetSize(.5f);
+            SetIntensity(.6f);
             terrainController = terrainGraphicsController.terrainController;
         }
 
@@ -30,7 +30,7 @@ namespace Tools
 
         public void SetIntensity(float val)
         {
-            intensity = minIntensity * Mathf.Pow(maxIntensity / minIntensity, val);
+            intensity = minIntensity + (maxIntensity - minIntensity) * val;
         }
 
         public override void SetSize(float val)
@@ -39,16 +39,12 @@ namespace Tools
             sizeSlider.value = val;
         }
 
-        public override void Click()
-        {
-        }
-
         public override void Hold()
         {
             float radius = GetSize() / 2f;
             Vector3 coords = terrainGraphicsController.GetCursorPos();
 
-            terrainController.RaiseArea(coords, radius, intensity);
+            terrainController.SmoothArea(coords, radius, intensity);
         }
     }
 }

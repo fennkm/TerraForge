@@ -15,7 +15,10 @@ public class TerrainGraphicsController : MonoBehaviour
     private Texture2DArray terrainMasks;
 
     private float terrainSize;
-    private Vector2 cursorPos;
+    private Vector3 cursorPos;
+
+    private bool stickyCursor;
+    private Vector3 stickyCursorPos;
 
     private bool cursorVisible = true;
     private bool terrainFocussed = true;
@@ -82,10 +85,13 @@ public class TerrainGraphicsController : MonoBehaviour
 
         terrainMat.SetInt("_PaintCursor", 1);
 
-        Vector2 normalisedCursorPos = WorldToNormalisedCoord(GetCursorPos());
+        Vector2 normalisedOuterCursorPos = WorldToNormalisedCoord(GetCursorPos());
+        Vector2 normalisedInnerCursorPos = WorldToNormalisedCoord(GetStickyCursorPos());
 
-        terrainMat.SetFloat("_CursorOffsetX", normalisedCursorPos.x);
-        terrainMat.SetFloat("_CursorOffsetY", normalisedCursorPos.y);
+        terrainMat.SetFloat("_OuterCursorOffsetX", normalisedOuterCursorPos.x);
+        terrainMat.SetFloat("_OuterCursorOffsetY", normalisedOuterCursorPos.y);
+        terrainMat.SetFloat("_InnerCursorOffsetX", normalisedInnerCursorPos.x);
+        terrainMat.SetFloat("_InnerCursorOffsetY", normalisedInnerCursorPos.y);
     }
 
     public bool CursorActive() 
@@ -118,27 +124,32 @@ public class TerrainGraphicsController : MonoBehaviour
                 out hit,
                 Mathf.Infinity,
                 1 << 3))
-            cursorPos =  hit.point.xz();
+            cursorPos =  hit.point;
         else
-            cursorPos =  Vector2.positiveInfinity;
+            cursorPos =  Vector3.positiveInfinity;
     }
 
-    public Vector2 GetCursorPos()
+    public Vector3 GetCursorPos()
     {
         return cursorPos;
     }
 
-    public Vector2 WorldToNormalisedCoord(Vector2 coord)
+    public Vector3 GetStickyCursorPos()
     {
-        return coord / terrainController.GetSize() + .5f.xx();
+        return (stickyCursor ? stickyCursorPos : GetCursorPos());
     }
 
-    public Vector2 WorldToTerrainMaskCoord(Vector2 coord)
+    public Vector2 WorldToNormalisedCoord(Vector3 coord)
     {
-        return (coord + terrainController.GetSize().xx() / 2f) * terrainDensity;
+        return coord.xz() / terrainController.GetSize() + .5f.xx();
     }
 
-    public void PaintTerrain(Vector2 pos, float radius, float intensity, int type)
+    public Vector2 WorldToTerrainMaskCoord(Vector3 coord)
+    {
+        return (coord.xz() + terrainController.GetSize().xx() / 2f) * terrainDensity;
+    }
+
+    public void PaintTerrain(Vector3 pos, float radius, float intensity, int type)
     {
         Vector2 texPos = WorldToTerrainMaskCoord(pos);
         float texRadius = radius * terrainDensity;
@@ -173,6 +184,17 @@ public class TerrainGraphicsController : MonoBehaviour
 
         terrainMasks.Apply();
         terrainMat.SetTexture("_TerrainMasks", terrainMasks);
+    }
+
+    public void SetStickyCursor(Vector3 pos)
+    {
+        stickyCursorPos = pos;
+        stickyCursor = true;
+    }
+
+    public void ClearStickyCursor()
+    {
+        stickyCursor = false;
     }
 
     void OnDrawGizmos()

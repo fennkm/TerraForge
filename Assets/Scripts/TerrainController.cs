@@ -110,14 +110,13 @@ public class TerrainController : MonoBehaviour
             heightMap[x, y] = Mathf.Clamp(heightMap[x, y] + val, -maxWaterDepth, maxHeight);
     }
 
-    public Vector2 WorldToMeshCoord(Vector2 coord)
+    public Vector2 WorldToMeshCoord(Vector3 coord)
     {
-        return (coord + GetSize().xx() / 2f) * actualDensity;
+        return (coord.xz() + GetSize().xx() / 2f) * actualDensity;
     }
 
-    public void RaiseArea(Vector2 pos, float radius, float intensity)
+    public void RaiseArea(Vector3 pos, float radius, float intensity)
     {
-        float s = Time.realtimeSinceStartup;
         Vector2 meshPos = WorldToMeshCoord(pos);
         float meshRadius = radius * actualDensity;
 
@@ -125,15 +124,133 @@ public class TerrainController : MonoBehaviour
             for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
             {
                 float dist = (new Vector2(i, j) - meshPos).magnitude;
+
+                if (dist > meshRadius)
+                    continue;
+
                 float val = (dist / (meshRadius * 2f)) * Mathf.PI;
 
-                if (val >= -Mathf.PI / 2 && val <= Mathf.PI / 2)
-                    AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
+                AddHeight(i, j, Mathf.Cos(val) * intensity * Time.deltaTime);
             }
-        
-        float t = Time.realtimeSinceStartup;
 
-        Debug.Log("Modifying height map: " + (t - s));
+        ApplyHeightMap(
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.x + meshRadius)),
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.y - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.y + meshRadius)));
+    }
+
+    public void SetAreaToHeight(Vector3 pos, float radius, float intensity, float heightTo, bool bringDown, bool bringUp)
+    {
+        Vector2 meshPos = WorldToMeshCoord(pos);
+        float meshRadius = radius * actualDensity;
+
+        for (int i = Mathf.Max(0, (int) (meshPos.x - meshRadius)); i < Mathf.Min(resolution, meshPos.x + meshRadius); i++)
+            for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
+            {
+                if (heightMap[i, j] == heightTo)
+                    continue;
+
+                float dist = (new Vector2(i, j) - meshPos).magnitude;
+
+                if (dist > meshRadius)
+                    continue;
+
+                float m = intensity;
+                float h = heightTo;
+                float a = heightMap[i, j];
+                float r = meshRadius;
+                float x = dist;
+                
+                float linearFunc = ((a - h) / (r * (1 - m))) * (x - r) + a;
+                float boundedFunc = (a >= h ? Mathf.Max(linearFunc, h) : Mathf.Min(linearFunc, h));
+                float smoothedFunc = 0.5f * ((h - a) * Mathf.Cos(Mathf.PI * ((boundedFunc - h) / (h - a))) + a + h);
+                
+                if (!bringDown && heightMap[i, j] >= smoothedFunc)
+                    continue;
+
+                if (!bringUp && heightMap[i, j] <= smoothedFunc)
+                    continue;
+
+                SetHeight(i, j, smoothedFunc);
+            }
+
+        ApplyHeightMap(
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.x + meshRadius)),
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.y - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.y + meshRadius)));
+    }
+
+    public void SmoothArea(Vector3 pos, float radius, float intensity)
+    {
+        Vector2 meshPos = WorldToMeshCoord(pos);
+        float meshRadius = radius * actualDensity;
+
+        for (int i = Mathf.Max(0, (int) (meshPos.x - meshRadius)); i < Mathf.Min(resolution, meshPos.x + meshRadius); i++)
+            for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
+            {
+                float dist = (new Vector2(i, j) - meshPos).magnitude;
+
+                if (dist > meshRadius)
+                    continue;
+                
+                float avgHeight = 0;
+                float pointsTaken = 0;
+
+                float sampleRadius = meshRadius / 2;
+
+                for (int u = 0; u < sampleRadius; u++)
+                    for (int v = 0; v < sampleRadius; v++)
+                        if (i + u >= 0 && 
+                            i + u < resolution && 
+                            j + v >= 0 && 
+                            j + v < resolution && 
+                            (new Vector2(u, v) - new Vector2(i, j)).magnitude >= sampleRadius)
+                        {
+                            avgHeight += heightMap[i + u, j + v];
+                            pointsTaken++;
+                        }
+
+                avgHeight /= pointsTaken;
+
+                float interpolationVal = dist / meshRadius;
+
+                float val = Mathf.Lerp(avgHeight, heightMap[i, j], interpolationVal);
+
+                float height = Mathf.Lerp(heightMap[i, j], val, intensity);
+
+                SetHeight(i, j, height);
+            }
+
+        ApplyHeightMap(
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.x + meshRadius)),
+            Mathf.Max(0, Mathf.FloorToInt(meshPos.y - meshRadius)),
+            Mathf.Min(resolution - 1, Mathf.CeilToInt(meshPos.y + meshRadius)));
+    }
+
+    public void RoughenArea(Vector3 pos, float radius, float intensity, float seed)
+    {
+        Vector2 meshPos = WorldToMeshCoord(pos);
+        float meshRadius = radius * actualDensity;
+
+        for (int i = Mathf.Max(0, (int) (meshPos.x - meshRadius)); i < Mathf.Min(resolution, meshPos.x + meshRadius); i++)
+            for (int j = Mathf.Max(0, (int) (meshPos.y - meshRadius)); j < Mathf.Min(resolution, meshPos.y + meshRadius); j++)
+            {
+                float dist = (new Vector2(i, j) - meshPos).magnitude;
+                
+                if (dist > meshRadius)
+                    continue;
+
+                float density = 2f;
+
+                float noiseVal = Mathf.PerlinNoise(density * i / meshRadius + seed, density * j / meshRadius + seed) - 0.5f;
+
+                float val = noiseVal * intensity * Time.deltaTime * (1 - dist / meshRadius);
+
+                AddHeight(i, j, val);
+            }
 
         ApplyHeightMap(
             Mathf.Max(0, Mathf.FloorToInt(meshPos.x - meshRadius)),

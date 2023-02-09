@@ -39,6 +39,9 @@ public class ToolController : MonoBehaviour
             else if (Input.GetKey(KeyCode.LeftShift) && Input.mouseScrollDelta.y > 0)
                 ModifyCursorSize(1);
 
+            if (Input.GetMouseButtonUp(0))
+                selectedTool.Release();
+
             if (Input.GetMouseButtonDown(0))
                 selectedTool.Click();
 

@@ -31,7 +31,8 @@ namespace Tools
         {
             SetSize(sizeVal + factor);
         }
-        public virtual void Click() { Debug.Log("The tool function on " + transform.name + " has not been set!"); }
-        public virtual void Hold() { Debug.Log("This tool function on " + transform.name + " has not been set!"); }
+        public virtual void Click() { }
+        public virtual void Hold() { }
+        public virtual void Release() { }
     }
 }
