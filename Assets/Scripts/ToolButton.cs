@@ -25,13 +25,14 @@ public class ToolButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         texture = GetComponent<Image>();
         texture.sprite = defaultImg;
 
-        toolTip.SetActive(false);
+        if (toolTip != null)
+            toolTip.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (hovering)
+        if (toolTip != null && hovering)
         {
             hoverTimer += Time.deltaTime;
 
@@ -52,7 +53,9 @@ public class ToolButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void OnPointerExit(PointerEventData eventData)
     {
         hovering = false;
-        toolTip.SetActive(false);
+
+        if (toolTip != null)
+            toolTip.SetActive(false);
     }
 
     public void SetSelected(bool selected)

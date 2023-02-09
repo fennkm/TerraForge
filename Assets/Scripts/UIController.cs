@@ -10,6 +10,11 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private int toolSelected;
 
     public TerrainGraphicsController terrainGraphicsController;
+    public GameObject settingsMenu;
+    public ToolButton settingsButton;
+
+    private const int MENU_NONE = -2;
+    private const int MENU_SETTINGS = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -62,10 +67,17 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (menuOpen == index)
             return;
-        else if (menuOpen != -1)
+        else if (menuOpen != MENU_NONE)
             CloseMenu(menuOpen);
 
-        buttons[index].menu.SetActive(true);
+        if (index == MENU_SETTINGS)
+        {
+            settingsButton.SetSelected(true);
+            settingsMenu.SetActive(true);
+        }
+        else
+            buttons[index].menu.SetActive(true);
+
         menuOpen = index;
     }
 
@@ -74,8 +86,16 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (menuOpen != index)
             return;
         
-        buttons[index].menu.SetActive(false);
-        menuOpen = -1;
+        if (index == MENU_SETTINGS)
+        {
+            Debug.Log("beep");
+            settingsButton.SetSelected(false);
+            settingsMenu.SetActive(false);
+        }
+        else
+            buttons[index].menu.SetActive(false);
+
+        menuOpen = MENU_NONE;
     }
 
     private void CloseMenus()
@@ -83,6 +103,17 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         foreach (ToolButton button in buttons)
             button.menu.SetActive(false);
 
-        menuOpen = -1;
+        settingsButton.SetSelected(false);
+        settingsMenu.SetActive(false);
+
+        menuOpen = MENU_NONE;
+    }
+
+    public void ToggleMenu()
+    {
+        if (menuOpen == MENU_SETTINGS)
+            CloseMenu(MENU_SETTINGS);
+        else
+            OpenMenu(MENU_SETTINGS);
     }
 }
