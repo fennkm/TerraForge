@@ -14,6 +14,7 @@ Shader "Custom/TerrainShader"
         _TerrainMasks ("Terrain Masks", 2DArray) = "texArr" {}
         _DesertTex ("Desert Texture", 2D) = "tex" {}
         _GrassTex ("Grass Texture", 2D) = "tex" {}
+        _StoneTex ("Stone Texture", 2D) = "tex" {}
         _SnowTex ("Snow Texture", 2D) = "tex" {}
     }
     SubShader
@@ -45,6 +46,8 @@ Shader "Custom/TerrainShader"
         float4 _DesertTex_ST;
         sampler2D _GrassTex;
         float4 _GrassTex_ST;
+        sampler2D _StoneTex;
+        float4 _StoneTex_ST;
         sampler2D _SnowTex;
         float4 _SnowTex_ST;
 
@@ -72,13 +75,18 @@ Shader "Custom/TerrainShader"
             col2.a = UNITY_SAMPLE_TEX2DARRAY(_TerrainMasks, float3(IN.uv_TerrainMasks.xy, 1)).r;
 
             fixed4 col3;
-            col3.rgb = tex2D(_SnowTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _SnowTex)).rgb;
+            col3.rgb = tex2D(_StoneTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _StoneTex)).rgb;
             col3.a = UNITY_SAMPLE_TEX2DARRAY(_TerrainMasks, float3(IN.uv_TerrainMasks.xy, 2)).r;
+
+            fixed4 col4;
+            col4.rgb = tex2D(_SnowTex, TRANSFORM_TEX(IN.uv_TerrainMasks, _SnowTex)).rgb;
+            col4.a = UNITY_SAMPLE_TEX2DARRAY(_TerrainMasks, float3(IN.uv_TerrainMasks.xy, 3)).r;
 
             fixed3 col = fixed3(
                 col1.rgb * col1.a +
                 col2.rgb * col2.a +
-                col3.rgb * col3.a);
+                col3.rgb * col3.a + 
+                col4.rgb * col4.a);
 
             if (_PaintCursor)
             {

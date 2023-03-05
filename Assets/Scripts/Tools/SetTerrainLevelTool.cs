@@ -54,6 +54,7 @@ namespace Tools
             Vector3 coords = terrainGraphicsController.GetCursorPos();
 
             terrainController.SetAreaToHeight(coords, radius, intensity, heightVal, true, true);
+            terrainGraphicsController.AutoPaintTerrain(coords, radius);
         }
 
         public override void Release()

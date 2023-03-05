@@ -115,6 +115,33 @@ public class TerrainController : MonoBehaviour
         return (coord.xz() + GetSize().xx() / 2f) * actualDensity;
     }
 
+    public float HeightAtWorldPoint(Vector3 worldPos)
+    {
+        Vector2 meshPoint = WorldToMeshCoord(worldPos);
+
+        Vector2Int a = new Vector2Int(Mathf.FloorToInt(meshPoint.x), Mathf.FloorToInt(meshPoint.y));
+        Vector2Int b = a + new Vector2Int(1, 0);
+        Vector2Int c = a + new Vector2Int(0, 1);
+        Vector2Int d = a + new Vector2Int(1, 1);
+
+        Vector2 uv = meshPoint - a;
+
+        float height = QuadLerp(heightMap[a.x, a.y],
+                                heightMap[b.x, b.y],
+                                heightMap[c.x, c.y],
+                                heightMap[d.x, d.y],
+                                uv.x, uv.y);
+
+        return height;
+    }
+
+    private float QuadLerp(float a, float b, float c, float d, float u, float v)
+    {
+        float abu = Mathf.Lerp(a, b, u);
+        float dcu = Mathf.Lerp(d, c, u);
+        return Mathf.Lerp(abu, dcu, v);
+    }
+
     public void RaiseArea(Vector3 pos, float radius, float intensity)
     {
         Vector2 meshPos = WorldToMeshCoord(pos);

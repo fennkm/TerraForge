@@ -45,6 +45,7 @@ namespace Tools
             Vector3 coords = terrainGraphicsController.GetCursorPos();
 
             terrainController.SmoothArea(coords, radius, intensity);
+            terrainGraphicsController.AutoPaintTerrain(coords, radius);
         }
     }
 }

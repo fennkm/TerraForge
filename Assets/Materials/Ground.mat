@@ -87,6 +87,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: c09c5ce2a1788f640b7f44e1c6a05576, type: 3}
         m_Scale: {x: 100, y: 100}
         m_Offset: {x: 0, y: 0}
+    - _StoneTex:
+        m_Texture: {fileID: 2800000, guid: 4a2d323f8e669e242a6f2050bc2375e2, type: 3}
+        m_Scale: {x: 100, y: 100}
+        m_Offset: {x: 0, y: 0}
     - _TerrainMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -110,16 +114,16 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _InnerCursorOffsetX: 0.3690172
-    - _InnerCursorOffsetY: 0.09178853
-    - _InnerCursorScale: 0.01953125
+    - _InnerCursorOffsetX: 0.43832034
+    - _InnerCursorOffsetY: 0.44077694
+    - _InnerCursorScale: 0.00390625
     - _InnerCursorSize: 0.015
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OuterCursorOffsetX: 0.3690172
-    - _OuterCursorOffsetY: 0.09178853
-    - _OuterCursorScale: 0.0390625
+    - _OuterCursorOffsetX: 0.43832034
+    - _OuterCursorOffsetY: 0.44077694
+    - _OuterCursorScale: 0.09300436
     - _OuterCursorSize: 0.03
     - _PaintCursor: 0
     - _Parallax: 0.02

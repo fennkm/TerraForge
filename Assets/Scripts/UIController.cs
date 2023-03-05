@@ -88,7 +88,6 @@ public class UIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         
         if (index == MENU_SETTINGS)
         {
-            Debug.Log("beep");
             settingsButton.SetSelected(false);
             settingsMenu.SetActive(false);
         }

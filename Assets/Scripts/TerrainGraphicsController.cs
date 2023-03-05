@@ -22,6 +22,7 @@ public class TerrainGraphicsController : MonoBehaviour
 
     private bool cursorVisible = true;
     private bool terrainFocussed = true;
+    private bool autoTerrain = true;
 
     public TerrainController terrainController;
 
@@ -149,6 +150,11 @@ public class TerrainGraphicsController : MonoBehaviour
         return (coord.xz() + terrainController.GetSize().xx() / 2f) * terrainDensity;
     }
 
+    public Vector3 TerrainMaskToWorldCoord(Vector2 coord)
+    {
+        return (coord / terrainDensity - terrainController.GetSize().xx() / 2f).x0y();
+    }
+
     public void PaintTerrain(Vector3 pos, float radius, float intensity, int type)
     {
         Vector2 texPos = WorldToTerrainMaskCoord(pos);
@@ -163,6 +169,50 @@ public class TerrainGraphicsController : MonoBehaviour
                 {
                     float opacity = Mathf.Clamp(intensity * Mathf.Cos((dist * Mathf.PI) / (texRadius * 2)), 0f, 1f);
                     SetTerrain(new Vector2Int(i, j), opacity, type);
+                }
+            }
+
+        ApplyTerrainTex();
+    }
+
+    public void AutoPaintTerrain(Vector3 pos, float radius)
+    {
+        if (!autoTerrain)
+            return;
+
+        Vector2 texPos = WorldToTerrainMaskCoord(pos);
+        float texRadius = radius * terrainDensity;
+
+        for (int j = Mathf.Max(0, (int) (texPos.y - texRadius)); j < Mathf.Min(terrainMasks.width - 1, texPos.y +  texRadius); j++)
+            for (int i = Mathf.Max(0, (int) (texPos.x - texRadius)); i < Mathf.Min(terrainMasks.width - 1, texPos.x +  texRadius); i++)
+            {
+                float dist = (new Vector2(i, j) - texPos).magnitude;
+
+                if (dist >= -texRadius && dist <= texRadius)
+                {
+                    float height = terrainController.HeightAtWorldPoint(TerrainMaskToWorldCoord(new Vector2(i, j)));
+
+                    if (height <= 0f)
+                        SetTerrain(new Vector2Int(i, j), 1, 0);
+                    else if (height <= 2f)
+                    {
+                        SetTerrain(new Vector2Int(i, j), 1, 0);
+                        SetTerrain(new Vector2Int(i, j), height / 2f, 1);
+                    }
+                    else if (height <= 5f)
+                        SetTerrain(new Vector2Int(i, j), 1, 1);
+                    else if (height <= 7f)
+                    {
+                        SetTerrain(new Vector2Int(i, j), 1, 1);
+                        SetTerrain(new Vector2Int(i, j), (height - 5f) / 2f, 2);
+                    }
+                    else if (height <= 9f)
+                        SetTerrain(new Vector2Int(i, j), 1, 2);
+                    else if (height <= 10f)
+                    {
+                        SetTerrain(new Vector2Int(i, j), 1, 2);
+                        SetTerrain(new Vector2Int(i, j), height - 9f, 3);
+                    }
                 }
             }
 
@@ -195,6 +245,11 @@ public class TerrainGraphicsController : MonoBehaviour
     public void ClearStickyCursor()
     {
         stickyCursor = false;
+    }
+
+    public void ToggleAutoTerrain()
+    {
+        autoTerrain = !autoTerrain;
     }
 
     void OnDrawGizmos()
