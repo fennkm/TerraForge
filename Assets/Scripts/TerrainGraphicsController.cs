@@ -213,6 +213,10 @@ public class TerrainGraphicsController : MonoBehaviour
                         SetTerrain(new Vector2Int(i, j), 1, 2);
                         SetTerrain(new Vector2Int(i, j), height - 9f, 3);
                     }
+                    else
+                    {
+                        SetTerrain(new Vector2Int(i, j), 1, 3);
+                    }
                 }
             }
 

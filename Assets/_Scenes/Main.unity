@@ -5475,7 +5475,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &715956276
 GameObject:
@@ -15158,7 +15158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b026d524cf5d25042bb80f7358f7393a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHeight: 10
+  maxHeight: 15
   shallowWaterDepth: 0.5
   maxWaterDepth: 5
   shallowWaterColour: {r: 0, g: 0.5200001, b: 0.6117647, a: 0.50980395}
@@ -15179,7 +15179,7 @@ Transform:
   m_Children:
   - {fileID: 396822418}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1931061583
 MonoBehaviour:

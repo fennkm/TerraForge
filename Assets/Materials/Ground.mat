@@ -114,16 +114,16 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _InnerCursorOffsetX: 0.017608762
-    - _InnerCursorOffsetY: 0.36608636
+    - _InnerCursorOffsetX: 0.4925508
+    - _InnerCursorOffsetY: 0.43531597
     - _InnerCursorScale: 0.00390625
     - _InnerCursorSize: 0.015
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OuterCursorOffsetX: 0.017608762
-    - _OuterCursorOffsetY: 0.36608636
-    - _OuterCursorScale: 0.02265625
+    - _OuterCursorOffsetX: 0.4925508
+    - _OuterCursorOffsetY: 0.43531597
+    - _OuterCursorScale: 0.1536811
     - _OuterCursorSize: 0.03
     - _PaintCursor: 0
     - _Parallax: 0.02
