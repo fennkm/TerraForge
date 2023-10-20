@@ -4,6 +4,8 @@ People who create fictional worlds for mediums such as books, films, and video g
 
 Please see the included report for more information regarding the features and development of TerraForge.
 
-![alt text](https://github.com/fennkm/UncertaintY-Game/blob/main/DemoAngle1.PNG?raw=true)
-![alt text](https://github.com/fennkm/UncertaintY-Game/blob/main/DemoSide.PNG?raw=true)
-![alt text](https://github.com/fennkm/UncertaintY-Game/blob/main/DemoTop.PNG?raw=true)
+![alt text](https://github.com/fennkm/TerraForge/blob/main/DemoAngle1.PNG?raw=true)
+
+![alt text](https://github.com/fennkm/TerraForge/blob/main/DemoSide.PNG?raw=true)
+
+![alt text](https://github.com/fennkm/TerraForge/blob/main/DemoTop.PNG?raw=true)
